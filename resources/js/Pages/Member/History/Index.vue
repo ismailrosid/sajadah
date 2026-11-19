@@ -4,7 +4,8 @@ import { router, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import CustomSelect from '@/Components/UI/CustomSelect.vue';
-import { Calendar, CheckCircle2, Clock, XCircle, Eye, MapPin, Filter, ArrowLeft, X, Users, AlertCircle } from 'lucide-vue-next';
+import CustomMonthPicker from '@/Components/UI/CustomMonthPicker.vue';
+import { Calendar, CheckCircle2, Check, Clock, XCircle, Eye, MapPin, Filter, ArrowLeft, X, Users, AlertCircle } from 'lucide-vue-next';
 
 const props = defineProps({
     attendances: Object,
@@ -70,6 +71,62 @@ const openDetail = (attendance) => {
 const closeDetail = () => {
     showDetailModal.value = false;
     selectedAttendance.value = null;
+};
+
+const getTableStatusLabel = (att) => {
+    if (!att) return '';
+    if (att.status === 'pending' || att.status === 'pending_approval') {
+        return 'Menunggu';
+    }
+    if (att.status === 'late') {
+        return 'Terlambat';
+    }
+    if (att.status === 'present' || att.status === 'approved') {
+        return 'Tepat Waktu';
+    }
+    return 'Tidak Sholat';
+};
+
+const getDetailStatusLabel = (att) => {
+    if (!att) return '';
+    if (att.status === 'pending' || att.status === 'pending_approval') {
+        return 'Menunggu Persetujuan';
+    }
+    if (att.is_rejected || att.status === 'rejected') {
+        return 'Ditolak (Tidak Sholat)';
+    }
+    if (att.is_approver_verified) {
+        return att.status === 'late' ? 'Disetujui Terlambat' : 'Disetujui Tepat Waktu';
+    }
+    if (att.status === 'late') {
+        return 'Terlambat';
+    }
+    if (att.status === 'present' || att.status === 'approved') {
+        return 'Tepat Waktu';
+    }
+    return 'Tidak Sholat';
+};
+
+const getStatusBadgeClasses = (att) => {
+    if (!att) return '';
+    if (att.status === 'present' || att.status === 'approved') {
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    }
+    if (att.status === 'pending' || att.status === 'pending_approval') {
+        return 'bg-amber-100 text-amber-800 border-amber-200 ring-1 ring-amber-200';
+    }
+    if (att.status === 'late') {
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+    }
+    if (att.status === 'rejected' || att.status === 'absent' || att.is_rejected) {
+        return 'bg-rose-100 text-rose-800 border-rose-200';
+    }
+    return 'bg-slate-100 text-slate-700 border-slate-200';
+};
+
+const hasApprovalStatus = (att) => {
+    if (!att) return false;
+    return !!(att.is_approver_verified || att.is_rejected || att.status === 'rejected' || att.status === 'pending' || att.status === 'pending_approval');
 };
 </script>
 
@@ -167,13 +224,12 @@ const closeDetail = () => {
             </div>
 
             <!-- Filter Bar -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                    <input
-                        type="month"
+                    <CustomMonthPicker
                         v-model="monthFilter"
+                        placeholder="Pilih Bulan..."
                         @change="applyFilters"
-                        class="w-full text-xs rounded-xl border-slate-200 py-2 px-3 text-slate-700 focus:border-emerald-500 focus:ring-emerald-500 shadow-xs"
                     />
                 </div>
 
@@ -228,46 +284,62 @@ const closeDetail = () => {
                                     </div>
                                 </td>
 
-                                <!-- Kolom 2: Status (Seragam 4 Status Utama) -->
+                                <!-- Kolom 2: Status (Mobile: Ikon Bulat + Floating Tooltip Badge saat di-hover/sentuh, Laptop: Pill Badge Lengkap) -->
                                 <td class="py-3.5 px-2 sm:px-4 text-center">
-                                    <!-- Menunggu Approval -->
-                                    <template v-if="att.status === 'pending' || att.status === 'pending_approval'">
-                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                                            <Clock class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                                            <span>Menunggu</span>
-                                        </span>
-                                    </template>
+                                    <div class="group relative inline-flex items-center justify-center">
+                                        <!-- Floating Badge Tooltip saat di-hover/sentuh (Khusus Mobile) -->
+                                        <div
+                                            class="sm:hidden pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-all duration-200 z-30"
+                                        >
+                                            <span
+                                                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shadow-md whitespace-nowrap cursor-default"
+                                                :class="getStatusBadgeClasses(att)"
+                                            >
+                                                <!-- Ikon di dalam badge HANYA jika melewati approval / pending -->
+                                                <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-3 h-3 text-amber-600 animate-pulse shrink-0" />
+                                                <XCircle v-else-if="att.is_rejected || att.status === 'rejected'" class="w-3 h-3 text-rose-600 shrink-0" />
+                                                <CheckCircle2 v-else-if="att.is_approver_verified" class="w-3 h-3 shrink-0" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
+                                                <!-- Jika tanpa approval (absen biasa / absent), di badge cukup keterangan teks saja tanpa ikon -->
+                                                <span>{{ getTableStatusLabel(att) }}</span>
+                                            </span>
+                                        </div>
 
-                                    <!-- Ditolak -> Tidak Sholat dengan ikon [X] -->
-                                    <template v-else-if="att.is_rejected || att.status === 'rejected'">
-                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
-                                            <XCircle class="w-3.5 h-3.5 text-rose-600" />
-                                            <span>Tidak Sholat</span>
-                                        </span>
-                                    </template>
+                                        <!-- Tampilan Mobile (sm:hidden): Selalu Ikon Bulat Interaktif -->
+                                        <div
+                                            class="sm:hidden w-8 h-8 rounded-full flex items-center justify-center transition-all transform active:scale-95 shadow-xs cursor-pointer border"
+                                            :class="[
+                                                att.status === 'present' || att.status === 'approved'
+                                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                                                    : '',
+                                                att.status === 'pending' || att.status === 'pending_approval'
+                                                    ? 'bg-amber-100 text-amber-700 border-amber-300 ring-2 ring-amber-200/60'
+                                                    : '',
+                                                att.status === 'late'
+                                                    ? 'bg-amber-100 text-amber-700 border-amber-300'
+                                                    : '',
+                                                att.status === 'rejected' || att.status === 'absent' || att.is_rejected
+                                                    ? 'bg-rose-100 text-rose-700 border-rose-300'
+                                                    : ''
+                                            ]"
+                                        >
+                                            <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-4 h-4 text-amber-600 animate-pulse" />
+                                            <XCircle v-else-if="att.is_rejected || att.status === 'rejected' || att.status === 'absent'" class="w-4 h-4 text-rose-600" />
+                                            <CheckCircle2 v-else-if="att.is_approver_verified" class="w-4 h-4" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
+                                            <Check v-else-if="att.status === 'present' || att.status === 'approved'" class="w-4 h-4 text-emerald-600" />
+                                            <Clock v-else-if="att.status === 'late'" class="w-4 h-4 text-amber-600" />
+                                        </div>
 
-                                    <!-- Terlambat -->
-                                    <template v-else-if="att.status === 'late'">
-                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                                            <CheckCircle2 v-if="att.is_approver_verified" class="w-3.5 h-3.5 text-amber-600" />
-                                            <span>Terlambat</span>
+                                        <!-- Di Layar Laptop/Desktop (hidden sm:inline-flex): Badge Pill Lengkap Standar Dashboard -->
+                                        <span
+                                            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition cursor-default whitespace-nowrap"
+                                            :class="getStatusBadgeClasses(att)"
+                                        >
+                                            <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-3.5 h-3.5 text-amber-600 animate-pulse shrink-0" />
+                                            <XCircle v-else-if="att.is_rejected || att.status === 'rejected'" class="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                            <CheckCircle2 v-else-if="att.is_approver_verified" class="w-3.5 h-3.5 shrink-0" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
+                                            <span>{{ getTableStatusLabel(att) }}</span>
                                         </span>
-                                    </template>
-
-                                    <!-- Tepat Waktu -->
-                                    <template v-else-if="att.status === 'present' || att.status === 'approved'">
-                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                            <CheckCircle2 v-if="att.is_approver_verified" class="w-3.5 h-3.5 text-emerald-600" />
-                                            <span>Tepat Waktu</span>
-                                        </span>
-                                    </template>
-
-                                    <!-- Tidak Sholat -->
-                                    <template v-else>
-                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
-                                            <span>Tidak Sholat</span>
-                                        </span>
-                                    </template>
+                                    </div>
                                 </td>
 
                                 <!-- Kolom 3: Aksi / Detail -->
@@ -339,6 +411,22 @@ const closeDetail = () => {
                         <table class="w-full text-xs text-left border-collapse">
                             <tbody class="divide-y divide-slate-100">
                                 <tr class="bg-slate-50/50">
+                                    <td class="py-2.5 px-4 font-semibold text-slate-500 w-32 sm:w-36">
+                                        Status
+                                    </td>
+                                    <td class="py-2.5 px-4 font-bold">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border"
+                                            :class="getStatusBadgeClasses(selectedAttendance)"
+                                        >
+                                            <CheckCircle2 v-if="selectedAttendance.is_approver_verified" class="w-3.5 h-3.5" :class="selectedAttendance.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
+                                            <XCircle v-else-if="selectedAttendance.is_rejected || selectedAttendance.status === 'rejected'" class="w-3.5 h-3.5 text-rose-600" />
+                                            <Clock v-else-if="selectedAttendance.status === 'pending' || selectedAttendance.status === 'pending_approval'" class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                                            <span>{{ getDetailStatusLabel(selectedAttendance) }}</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td class="py-2.5 px-4 font-semibold text-slate-500 w-32 sm:w-36">
                                         Waktu Absen
                                     </td>
