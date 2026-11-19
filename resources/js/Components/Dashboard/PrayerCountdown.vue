@@ -55,18 +55,26 @@ onUnmounted(() => {
         <!-- Background subtle islamic pattern decoration -->
         <div class="absolute -right-6 -bottom-8 w-44 h-44 rounded-full bg-white/5 blur-2xl pointer-events-none"></div>
 
-        <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-                <span class="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm">
+        <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm shrink-0">
                     <Clock class="w-4 h-4 text-emerald-300" />
                 </span>
-                <span class="text-xs font-medium text-emerald-200 uppercase tracking-wider">
+                <span class="text-xs font-medium text-emerald-200 uppercase tracking-wider truncate">
                     Menuju Waktu Sholat
                 </span>
             </div>
-            <span v-if="nextPrayer" class="px-2.5 py-1 rounded-full bg-emerald-500/30 text-emerald-200 text-xs font-semibold border border-emerald-400/30">
-                {{ nextPrayer.label }} pukul {{ nextPrayer.time }}
-            </span>
+            <div
+                v-if="nextPrayer"
+                class="inline-flex items-center gap-1.5 p-1 pl-2.5 rounded-xl bg-black/20 backdrop-blur-md border border-white/10 shadow-xs shrink-0 whitespace-nowrap"
+            >
+                <span class="text-xs font-bold text-white tracking-tight">
+                    {{ nextPrayer.label }}
+                </span>
+                <span class="px-1.5 py-0.5 rounded-lg bg-emerald-500/25 text-emerald-200 font-mono font-bold text-[11px] border border-emerald-400/20">
+                    {{ nextPrayer.time }}
+                </span>
+            </div>
         </div>
 
         <div v-if="nextPrayer" class="flex items-baseline gap-2 my-2">
