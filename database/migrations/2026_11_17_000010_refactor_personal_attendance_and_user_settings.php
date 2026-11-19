@@ -71,19 +71,37 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn([
-                'city',
-                'latitude',
-                'longitude',
-                'timezone',
-                'prayer_calc_method',
-                'attendance_duration_minutes',
-            ]);
-        });
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                $cols = [];
+                foreach (['city', 'latitude', 'longitude', 'timezone', 'prayer_calc_method', 'attendance_duration_minutes'] as $col) {
+                    if (Schema::hasColumn('users', $col)) {
+                        $cols[] = $col;
+                    }
+                }
+                if (!empty($cols)) {
+                    $table->dropColumn($cols);
+                }
+            });
+        }
 
-        Schema::table('prayer_schedules', function (Blueprint $table) {
-            $table->dropColumn(['user_id', 'city']);
-        });
+        if (Schema::hasTable('prayer_schedules')) {
+            Schema::table('prayer_schedules', function (Blueprint $table) {
+                if (Schema::hasColumn('prayer_schedules', 'user_id')) {
+                    try {
+                        $table->dropForeign(['user_id']);
+                    } catch (\Throwable $e) {}
+                }
+                $cols = [];
+                foreach (['user_id', 'city'] as $col) {
+                    if (Schema::hasColumn('prayer_schedules', $col)) {
+                        $cols[] = $col;
+                    }
+                }
+                if (!empty($cols)) {
+                    $table->dropColumn($cols);
+                }
+            });
+        }
     }
 };

@@ -19,12 +19,16 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('attendances', function (Blueprint $table) {
-            $table->foreignId('mosque_id')->nullable(false)->change();
-        });
+        if (Schema::hasTable('attendances') && Schema::hasColumn('attendances', 'mosque_id')) {
+            Schema::table('attendances', function (Blueprint $table) {
+                $table->foreignId('mosque_id')->nullable(false)->change();
+            });
+        }
 
-        Schema::table('prayer_schedules', function (Blueprint $table) {
-            $table->foreignId('mosque_id')->nullable(false)->change();
-        });
+        if (Schema::hasTable('prayer_schedules') && Schema::hasColumn('prayer_schedules', 'mosque_id')) {
+            Schema::table('prayer_schedules', function (Blueprint $table) {
+                $table->foreignId('mosque_id')->nullable(false)->change();
+            });
+        }
     }
 };

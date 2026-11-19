@@ -37,21 +37,51 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('attendances', function (Blueprint $table) {
-            $table->dropForeign(['approved_by']);
-            $table->dropColumn(['request_notes', 'approved_by', 'approved_at', 'approval_notes']);
-        });
+        if (Schema::hasTable('attendances')) {
+            Schema::table('attendances', function (Blueprint $table) {
+                if (Schema::hasColumn('attendances', 'approved_by')) {
+                    try {
+                        $table->dropForeign(['approved_by']);
+                    } catch (\Throwable $e) {}
+                }
+                $cols = [];
+                foreach (['request_notes', 'approved_by', 'approved_at', 'approval_notes'] as $c) {
+                    if (Schema::hasColumn('attendances', $c)) {
+                        $cols[] = $c;
+                    }
+                }
+                if (!empty($cols)) {
+                    $table->dropColumn($cols);
+                }
+            });
 
-        if (DB::getDriverName() === 'mysql') {
-            DB::statement("ALTER TABLE attendances MODIFY COLUMN status ENUM('present', 'late', 'rejected', 'absent') NOT NULL DEFAULT 'present'");
+            if (DB::getDriverName() === 'mysql') {
+                try {
+                    DB::statement("ALTER TABLE attendances MODIFY COLUMN status ENUM('present', 'late', 'rejected', 'absent') NOT NULL DEFAULT 'present'");
+                } catch (\Throwable $e) {}
+            }
         }
 
-        Schema::table('attendance_settings', function (Blueprint $table) {
-            $table->dropColumn('attendance_duration_minutes');
-        });
+        if (Schema::hasTable('attendance_settings')) {
+            Schema::table('attendance_settings', function (Blueprint $table) {
+                if (Schema::hasColumn('attendance_settings', 'attendance_duration_minutes')) {
+                    $table->dropColumn('attendance_duration_minutes');
+                }
+            });
+        }
 
-        Schema::table('communities', function (Blueprint $table) {
-            $table->dropColumn(['reference_city', 'reference_latitude', 'reference_longitude']);
-        });
+        if (Schema::hasTable('communities')) {
+            Schema::table('communities', function (Blueprint $table) {
+                $cols = [];
+                foreach (['reference_city', 'reference_latitude', 'reference_longitude'] as $c) {
+                    if (Schema::hasColumn('communities', $c)) {
+                        $cols[] = $c;
+                    }
+                }
+                if (!empty($cols)) {
+                    $table->dropColumn($cols);
+                }
+            });
+        }
     }
 };
