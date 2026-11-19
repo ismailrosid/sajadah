@@ -42,7 +42,7 @@ const approve = (memberId) => {
 };
 
 const reject = (memberId) => {
-    if (confirm('Yakin ingin menolak pendaftaran anggota ini?')) {
+    if (confirm('Tolak pendaftaran anggota ini?')) {
         router.post(route('admin.members.reject', memberId), {}, { preserveScroll: true });
     }
 };
@@ -52,7 +52,7 @@ const updateRole = (memberId, role) => {
 };
 
 const remove = (memberId, name) => {
-    if (confirm(`Yakin ingin mengeluarkan ${name} dari komunitas?`)) {
+    if (confirm(`Hapus anggota ${name}?`)) {
         router.delete(route('admin.members.destroy', memberId), { preserveScroll: true });
     }
 };

@@ -19,11 +19,11 @@ class CommunitySwitcherController extends Controller
         $user = $request->user();
 
         if (!$user->isSuperAdmin() && !$user->isCommunityMember($community)) {
-            return back()->with('error', 'Anda tidak memiliki akses ke komunitas ini.');
+            return back()->with('error', 'Akses komunitas ditolak.');
         }
 
         $this->contextService->setActiveCommunity($community);
 
-        return back()->with('success', "Beralih ke komunitas {$community->name}");
+        return back()->with('success', 'Berhasil beralih komunitas.');
     }
 }

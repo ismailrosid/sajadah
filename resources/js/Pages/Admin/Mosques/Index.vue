@@ -72,7 +72,7 @@ const submitForm = () => {
 };
 
 const deleteMosque = (mosque) => {
-    if (confirm(`Yakin ingin menghapus ${mosque.name}? Seluruh jadwal sholat terkait juga akan dihapus.`)) {
+    if (confirm(`Hapus masjid ${mosque.name}?`)) {
         router.delete(route('admin.mosques.destroy', mosque.id), { preserveScroll: true });
     }
 };

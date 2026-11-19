@@ -136,7 +136,7 @@ const startGeolocation = () => {
     geoError.value = null;
 
     if (!navigator.geolocation) {
-        geoError.value = 'Browser Anda tidak mendukung layanan lokasi (GPS).';
+        geoError.value = 'Browser tidak mendukung GPS.';
         geoLoading.value = false;
         return;
     }
@@ -159,9 +159,9 @@ const startGeolocation = () => {
                 geoError.value = null;
                 fetchReverseGeocode(userLat.value, userLng.value);
             } else if (error.code === error.PERMISSION_DENIED) {
-                geoError.value = 'Izin lokasi (GPS) ditolak. Mohon aktifkan izin lokasi di browser Anda.';
+                geoError.value = 'Izin lokasi ditolak.';
             } else {
-                geoError.value = 'Gagal mendeteksi lokasi. Pastikan GPS perangkat Anda aktif.';
+                geoError.value = 'Gagal mendeteksi lokasi GPS.';
             }
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }

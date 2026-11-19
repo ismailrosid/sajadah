@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { CheckCircle2, AlertCircle, Info, X } from 'lucide-vue-next';
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-vue-next';
 
 const page = usePage();
 const visible = ref(false);
@@ -28,6 +28,8 @@ watch(
             showToast(flash.success, 'success');
         } else if (flash.error) {
             showToast(flash.error, 'error');
+        } else if (flash.warning) {
+            showToast(flash.warning, 'warning');
         } else if (flash.info) {
             showToast(flash.info, 'info');
         }
@@ -51,12 +53,14 @@ const close = () => {
                 'flex items-start p-4 rounded-xl shadow-lg border backdrop-blur-md',
                 type === 'success' ? 'bg-emerald-50/95 border-emerald-200 text-emerald-900' : '',
                 type === 'error' ? 'bg-rose-50/95 border-rose-200 text-rose-900' : '',
+                type === 'warning' ? 'bg-amber-50/95 border-amber-200 text-amber-900' : '',
                 type === 'info' ? 'bg-blue-50/95 border-blue-200 text-blue-900' : '',
             ]"
         >
             <div class="flex-shrink-0 mt-0.5">
                 <CheckCircle2 v-if="type === 'success'" class="w-5 h-5 text-emerald-600" />
                 <AlertCircle v-else-if="type === 'error'" class="w-5 h-5 text-rose-600" />
+                <AlertTriangle v-else-if="type === 'warning'" class="w-5 h-5 text-amber-600" />
                 <Info v-else class="w-5 h-5 text-blue-600" />
             </div>
             <div class="ml-3 flex-1 text-sm font-medium leading-relaxed">

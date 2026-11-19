@@ -60,7 +60,7 @@ const submitForm = () => {
 };
 
 const deleteCommunity = (c) => {
-    if (confirm(`Yakin ingin menghapus komunitas ${c.name}? Seluruh data anggota, masjid, dan absensi di dalamnya akan dihapus.`)) {
+    if (confirm(`Hapus komunitas ${c.name}?`)) {
         router.delete(route('superadmin.communities.destroy', c.id), { preserveScroll: true });
     }
 };

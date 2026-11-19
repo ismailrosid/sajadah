@@ -85,7 +85,7 @@ class MosqueController extends Controller
         // Auto-generate prayer schedules for this new mosque for the current month
         $this->generateSchedulesForMosque($mosque, $community->setting?->prayer_calc_method ?? 'KEMENAG');
 
-        return back()->with('success', "Masjid {$mosque->name} berhasil ditambahkan dan jadwal sholat telah digenerate.");
+        return back()->with('success', 'Masjid berhasil ditambahkan.');
     }
 
     public function update(Request $request, Mosque $mosque): RedirectResponse
@@ -115,7 +115,7 @@ class MosqueController extends Controller
         // Regenerate schedules if coordinates changed
         $this->generateSchedulesForMosque($mosque, $community->setting?->prayer_calc_method ?? 'KEMENAG');
 
-        return back()->with('success', "Data masjid {$mosque->name} berhasil diperbarui.");
+        return back()->with('success', 'Data masjid berhasil diperbarui.');
     }
 
     public function destroy(Request $request, Mosque $mosque): RedirectResponse
@@ -128,7 +128,7 @@ class MosqueController extends Controller
         $name = $mosque->name;
         $mosque->delete();
 
-        return back()->with('success', "Masjid {$name} berhasil dihapus.");
+        return back()->with('success', 'Masjid berhasil dihapus.');
     }
 
     protected function generateSchedulesForMosque(Mosque $mosque, string $method): void

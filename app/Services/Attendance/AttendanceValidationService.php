@@ -52,7 +52,7 @@ class AttendanceValidationService
 
             if ($globalSetting && !$globalSetting->is_attendance_enabled) {
                 throw ValidationException::withMessages([
-                    'prayer_type' => 'Sistem absensi sholat saat ini sedang dinonaktifkan.',
+                    'prayer_type' => 'Sistem absensi sedang dinonaktifkan.',
                 ]);
             }
 
@@ -72,7 +72,7 @@ class AttendanceValidationService
 
                 if ($existing) {
                     throw ValidationException::withMessages([
-                        'prayer_type' => "Anda sudah mencatat kehadiran Sholat {$prayerType->label()} untuk hari ini.",
+                        'prayer_type' => "Absensi Sholat {$prayerType->label()} hari ini sudah tercatat.",
                     ]);
                 }
             }
@@ -82,14 +82,14 @@ class AttendanceValidationService
 
             if (!$schedule && !$isTestMode) {
                 throw ValidationException::withMessages([
-                    'prayer_type' => 'Jadwal waktu sholat belum berhasil diverifikasi. Absensi belum dapat dibuka.',
+                    'prayer_type' => 'Jadwal sholat belum tersedia.',
                 ]);
             }
 
             $prayerTimeStr = $schedule?->getTimeFor($prayerType->value) ?? '04:15:00';
             if (!$prayerTimeStr && !$isTestMode) {
                 throw ValidationException::withMessages([
-                    'prayer_type' => "Waktu sholat {$prayerType->label()} tidak ditemukan dalam jadwal hari ini.",
+                    'prayer_type' => "Jadwal Sholat {$prayerType->label()} tidak ditemukan.",
                 ]);
             }
 
@@ -110,7 +110,7 @@ class AttendanceValidationService
             // Check if prayer time is in future (Bypassed in test mode)
             if (!$isTestMode && $serverTimestamp->lt($windowStart)) {
                 throw ValidationException::withMessages([
-                    'prayer_type' => "Waktu Sholat {$prayerType->label()} belum masuk. Periode absensi dibuka mulai pukul {$windowStart->format('H:i')}.",
+                    'prayer_type' => "Waktu Sholat {$prayerType->label()} belum masuk (buka pukul {$windowStart->format('H:i')}).",
                 ]);
             }
 
@@ -118,7 +118,7 @@ class AttendanceValidationService
             if (!$isTestMode && $serverTimestamp->gt($windowEnd)) {
                 if (!$isLateRequest) {
                     throw ValidationException::withMessages([
-                        'prayer_type' => "Periode absensi normal Sholat {$prayerType->label()} telah berakhir pada pukul {$windowEnd->format('H:i')}. Silakan gunakan fitur Absensi Susulan.",
+                        'prayer_type' => 'Waktu absensi normal telah berakhir. Silakan ajukan absensi susulan.',
                         'is_window_closed' => true,
                     ]);
                 }
@@ -144,16 +144,8 @@ class AttendanceValidationService
                     }
 
                     if ($serverTimestamp->gte($nextPrayerStart)) {
-                        $nextLabel = match ($nextPrayerKey) {
-                            'subuh' => 'Subuh',
-                            'dzuhur' => 'Dzuhur',
-                            'ashar' => 'Ashar',
-                            'maghrib' => 'Maghrib',
-                            'isya' => 'Isya',
-                            default => $nextPrayerKey,
-                        };
                         throw ValidationException::withMessages([
-                            'prayer_type' => "Waktu Sholat {$nextLabel} telah tiba ({$nextPrayerStart->format('H:i')}). Kesempatan absensi normal maupun susulan untuk Sholat {$prayerType->label()} telah ditutup.",
+                            'prayer_type' => "Batas waktu absensi Sholat {$prayerType->label()} telah berakhir.",
                             'is_prayer_missed' => true,
                         ]);
                     }
@@ -197,7 +189,7 @@ class AttendanceValidationService
                 }
             } elseif ($status !== AttendanceStatus::Rejected) {
                 throw ValidationException::withMessages([
-                    'photo' => 'Foto selfie wajib diambil langsung melalui kamera.',
+                    'photo' => 'Foto selfie kamera wajib disertakan.',
                 ]);
             }
 

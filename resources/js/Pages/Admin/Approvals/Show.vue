@@ -231,7 +231,7 @@ const confirmReject = () => {
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                             <CheckCircle2 class="w-5 h-5 text-emerald-600" />
-                            <span>Konfirmasi Persetujuan Absensi</span>
+                            <span>Konfirmasi Persetujuan</span>
                         </h3>
                         <button type="button" @click="showApproveModal = false" class="text-slate-400 hover:text-slate-600">
                             <X class="w-5 h-5" />
@@ -239,7 +239,7 @@ const confirmReject = () => {
                     </div>
 
                     <div class="text-xs text-slate-600 leading-relaxed">
-                        Anda akan menyetujui absensi Sholat <strong>{{ attendance.attendance_info.prayer_label }}</strong> milik <strong>{{ attendance.user.name }}</strong> pada tanggal <strong>{{ attendance.attendance_info.date }}</strong>.
+                        Setujui absensi Sholat <strong>{{ attendance.attendance_info.prayer_label }}</strong> - <strong>{{ attendance.user.name }}</strong>?
                     </div>
 
                     <div class="space-y-1">
@@ -247,7 +247,7 @@ const confirmReject = () => {
                         <input
                             type="text"
                             v-model="approvalNotes"
-                            placeholder="Contoh: Bukti foto dan lokasi telah diverifikasi."
+                            placeholder="Catatan opsional..."
                             class="w-full text-xs rounded-xl border-slate-200 py-2 px-3 focus:border-emerald-500 focus:ring-emerald-500"
                         />
                     </div>
@@ -267,7 +267,7 @@ const confirmReject = () => {
                             class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
                         >
                             <Loader2 v-if="isApproving" class="w-4 h-4 animate-spin" />
-                            <span>{{ isApproving ? 'Memproses...' : 'Setujui Sekarang' }}</span>
+                            <span>{{ isApproving ? 'Memproses...' : 'Setujui' }}</span>
                         </button>
                     </div>
                 </div>
@@ -279,7 +279,7 @@ const confirmReject = () => {
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                             <XCircle class="w-5 h-5 text-rose-600" />
-                            <span>Tolak Permohonan Absensi</span>
+                            <span>Tolak Absensi</span>
                         </h3>
                         <button type="button" @click="showRejectModal = false" class="text-slate-400 hover:text-slate-600">
                             <X class="w-5 h-5" />
@@ -287,7 +287,7 @@ const confirmReject = () => {
                     </div>
 
                     <div class="text-xs text-slate-600 leading-relaxed">
-                        Menolak absensi Sholat <strong>{{ attendance.attendance_info.prayer_label }}</strong> milik <strong>{{ attendance.user.name }}</strong>.
+                        Tolak absensi Sholat <strong>{{ attendance.attendance_info.prayer_label }}</strong> - <strong>{{ attendance.user.name }}</strong>?
                     </div>
 
                     <div class="space-y-1">
@@ -297,7 +297,7 @@ const confirmReject = () => {
                         <textarea
                             v-model="rejectionReason"
                             rows="3"
-                            placeholder="Tuliskan alasan penolakan secara jelas agar diketahui oleh user..."
+                            placeholder="Tulis alasan penolakan..."
                             class="w-full text-xs rounded-xl border-slate-200 py-2 px-3 focus:border-rose-500 focus:ring-rose-500"
                         ></textarea>
                         <p v-if="rejectionError" class="text-xs text-rose-600 font-medium">{{ rejectionError }}</p>
@@ -318,7 +318,7 @@ const confirmReject = () => {
                             class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
                         >
                             <Loader2 v-if="isRejecting" class="w-4 h-4 animate-spin" />
-                            <span>{{ isRejecting ? 'Memproses...' : 'Konfirmasi Tolak' }}</span>
+                            <span>{{ isRejecting ? 'Memproses...' : 'Tolak' }}</span>
                         </button>
                     </div>
                 </div>

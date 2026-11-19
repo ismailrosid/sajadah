@@ -94,7 +94,7 @@ class AttendanceApprovalController extends Controller
 
         $this->approvalService->approve($attendance, $viewer, $notes);
 
-        return redirect()->back()->with('success', "Absensi Sholat {$attendance->prayer_type->label()} dari {$attendance->user->name} berhasil disetujui.");
+        return redirect()->back()->with('success', "Absensi Sholat {$attendance->prayer_type->label()} berhasil disetujui.");
     }
 
     /**
@@ -112,11 +112,11 @@ class AttendanceApprovalController extends Controller
         $reason = $request->input('rejection_reason', $request->input('reason'));
 
         if (empty(trim((string)$reason))) {
-            return redirect()->back()->withErrors(['rejection_reason' => 'Alasan penolakan absensi wajib diisi.']);
+            return redirect()->back()->withErrors(['rejection_reason' => 'Alasan penolakan wajib diisi.']);
         }
 
         $this->approvalService->reject($attendance, $viewer, $reason);
 
-        return redirect()->back()->with('success', "Absensi Sholat {$attendance->prayer_type->label()} dari {$attendance->user->name} ditolak.");
+        return redirect()->back()->with('success', "Absensi Sholat {$attendance->prayer_type->label()} berhasil ditolak.");
     }
 }

@@ -182,19 +182,19 @@ class AttendanceApprovalService
     {
         if ($approver->id === $attendance->user_id) {
             throw ValidationException::withMessages([
-                'approver' => 'Anda tidak dapat menyetujui absensi milik Anda sendiri.',
+                'approver' => 'Tidak dapat menyetujui absensi sendiri.',
             ]);
         }
 
         if (!$attendance->isPending()) {
             throw ValidationException::withMessages([
-                'attendance' => 'Absensi ini sudah selesai diproses dan tidak dapat disetujui ulang.',
+                'attendance' => 'Absensi sudah selesai diproses.',
             ]);
         }
 
         if (!$this->canUserApprove($approver, $attendance)) {
             throw ValidationException::withMessages([
-                'approver' => 'Anda tidak memiliki hak akses untuk menyetujui absensi ini.',
+                'approver' => 'Akses approval ditolak.',
             ]);
         }
 
@@ -286,25 +286,25 @@ class AttendanceApprovalService
     {
         if (empty(trim($reason))) {
             throw ValidationException::withMessages([
-                'reason' => 'Alasan penolakan absensi wajib diisi.',
+                'reason' => 'Alasan penolakan wajib diisi.',
             ]);
         }
 
         if ($approver->id === $attendance->user_id) {
             throw ValidationException::withMessages([
-                'approver' => 'Anda tidak dapat menolak absensi milik Anda sendiri.',
+                'approver' => 'Tidak dapat menolak absensi sendiri.',
             ]);
         }
 
         if (!$attendance->isPending()) {
             throw ValidationException::withMessages([
-                'attendance' => 'Absensi ini sudah selesai diproses dan tidak dapat diubah.',
+                'attendance' => 'Absensi sudah selesai diproses.',
             ]);
         }
 
         if (!$this->canUserApprove($approver, $attendance)) {
             throw ValidationException::withMessages([
-                'approver' => 'Anda tidak memiliki hak akses untuk menolak absensi ini.',
+                'approver' => 'Akses approval ditolak.',
             ]);
         }
 

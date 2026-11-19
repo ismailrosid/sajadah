@@ -90,7 +90,7 @@ class CommunityMemberController extends Controller
             'joined_at' => now(),
         ]);
 
-        return back()->with('success', "Keanggotaan {$member->user->name} berhasil disetujui.");
+        return back()->with('success', 'Anggota berhasil disetujui.');
     }
 
     public function reject(Request $request, CommunityMember $member): RedirectResponse
@@ -104,7 +104,7 @@ class CommunityMemberController extends Controller
             'status' => CommunityMemberStatus::Rejected,
         ]);
 
-        return back()->with('success', "Permintaan bergabung {$member->user->name} ditolak.");
+        return back()->with('success', 'Permintaan bergabung berhasil ditolak.');
     }
 
     public function updateRole(Request $request, CommunityMember $member): RedirectResponse
@@ -122,7 +122,7 @@ class CommunityMemberController extends Controller
             'role' => $validated['role'],
         ]);
 
-        return back()->with('success', "Peran {$member->user->name} diubah menjadi {$member->role->label()}.");
+        return back()->with('success', 'Peran anggota berhasil diperbarui.');
     }
 
     public function destroy(Request $request, CommunityMember $member): RedirectResponse
@@ -132,10 +132,9 @@ class CommunityMemberController extends Controller
             abort(403);
         }
 
-        $userName = $member->user->name;
         $member->delete();
 
-        return back()->with('success', "{$userName} berhasil dikeluarkan dari komunitas.");
+        return back()->with('success', 'Anggota berhasil dihapus.');
     }
 
     public function invite(Request $request): RedirectResponse
@@ -155,7 +154,7 @@ class CommunityMemberController extends Controller
                 ->first();
 
             if ($existing) {
-                return back()->with('error', 'Pengguna dengan email ini sudah terdaftar di komunitas.');
+                return back()->with('error', 'Email sudah terdaftar di komunitas.');
             }
 
             CommunityMember::create([
@@ -166,9 +165,9 @@ class CommunityMemberController extends Controller
                 'joined_at' => now(),
             ]);
 
-            return back()->with('success', "{$user->name} berhasil ditambahkan langsung ke komunitas.");
+            return back()->with('success', 'Anggota berhasil ditambahkan.');
         }
 
-        return back()->with('info', "Undangan dikirim ke {$validated['email']}. Pengguna dapat mendaftar dengan email tersebut.");
+        return back()->with('info', "Undangan berhasil dikirim ke {$validated['email']}.");
     }
 }

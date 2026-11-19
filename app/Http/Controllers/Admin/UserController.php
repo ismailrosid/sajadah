@@ -97,24 +97,24 @@ class UserController extends Controller
 
         // Prevent self-demotion if current user is demoting themselves
         if ($user->id === $request->user()->id && $validated['role'] === 'user') {
-            return back()->with('error', 'Anda tidak dapat menurunkan peran akun Anda sendiri.');
+            return back()->with('error', 'Tidak dapat mengubah peran akun sendiri.');
         }
 
         $user->update([
             'global_role' => $validated['role'] === 'admin' ? GlobalRole::Admin : GlobalRole::User,
         ]);
 
-        return back()->with('success', "Peran pengguna {$user->name} berhasil diubah menjadi " . ucfirst($validated['role']) . ".");
+        return back()->with('success', 'Peran user berhasil diperbarui.');
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
         if ($user->id === $request->user()->id) {
-            return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+            return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
 
         $user->delete();
 
-        return back()->with('success', "Pengguna {$user->name} berhasil dihapus.");
+        return back()->with('success', 'User berhasil dihapus.');
     }
 }

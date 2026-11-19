@@ -137,8 +137,8 @@ class AttendanceController extends Controller
 
         if ($attendance->status === AttendanceStatus::Pending || $attendance->status === AttendanceStatus::PendingApproval) {
             $msg = $attendance->request_notes
-                ? "Permohonan absensi susulan Sholat {$attendance->prayer_type->label()} berhasil dikirim dan saat ini berstatus Menunggu Persetujuan."
-                : "Alhamdulillah, absensi Sholat {$attendance->prayer_type->label()} berhasil dikirim dan saat ini berstatus Menunggu Persetujuan.";
+                ? "Pengajuan susulan Sholat {$attendance->prayer_type->label()} berhasil dikirim."
+                : "Absensi Sholat {$attendance->prayer_type->label()} berhasil dikirim.";
 
             return redirect()->route('member.attendance.create')
                 ->with('info', $msg)
@@ -146,7 +146,7 @@ class AttendanceController extends Controller
         }
 
         if ($attendance->status === AttendanceStatus::Late) {
-            $msg = "Absensi susulan Sholat {$attendance->prayer_type->label()} berhasil dicatat (Status: Terlambat).";
+            $msg = "Absensi susulan Sholat {$attendance->prayer_type->label()} berhasil dicatat.";
             return redirect()->route('member.attendance.create')
                 ->with('info', $msg)
                 ->with('success', $msg);
@@ -154,10 +154,10 @@ class AttendanceController extends Controller
 
         if ($attendance->status === AttendanceStatus::Rejected) {
             return redirect()->route('member.attendance.create')
-                ->with('error', "Absensi ditolak: {$attendance->rejection_reason}");
+                ->with('error', "Absensi ditolak: {$attendance->rejection_reason}.");
         }
 
-        $successMsg = "Alhamdulillah, absensi Sholat {$attendance->prayer_type->label()} berhasil dicatat.";
+        $successMsg = "Absensi Sholat {$attendance->prayer_type->label()} berhasil dicatat.";
         return redirect()->route('member.attendance.create')
             ->with('info', $successMsg)
             ->with('success', $successMsg);

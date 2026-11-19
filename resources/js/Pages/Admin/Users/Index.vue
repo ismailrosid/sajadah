@@ -53,8 +53,8 @@ const toggleRole = (user) => {
     const targetRole = user.role === "admin" ? "user" : "admin";
     const confirmMsg =
         targetRole === "admin"
-            ? `Apakah Anda yakin ingin memberikan hak Administrator kepada ${user.name}?`
-            : `Apakah Anda yakin ingin menurunkan peran ${user.name} menjadi User biasa?`;
+            ? `Jadikan ${user.name} sebagai Admin?`
+            : `Ubah peran ${user.name} menjadi User?`;
 
     if (confirm(confirmMsg)) {
         router.patch(
@@ -66,11 +66,7 @@ const toggleRole = (user) => {
 };
 
 const deleteUser = (user) => {
-    if (
-        confirm(
-            `Hapus akun ${user.name} secara permanen? Data absensi terkait akan terdampak.`,
-        )
-    ) {
+    if (confirm(`Hapus akun ${user.name}?`)) {
         router.delete(route("admin.users.destroy", user.id), {
             preserveScroll: true,
         });

@@ -56,6 +56,6 @@ class AttendanceSettingController extends Controller
             'auto_approve_after_hours' => $validated['auto_approve_after_hours'] ?? 24,
         ]);
 
-        return back()->with('success', 'Pengaturan aplikasi absensi berhasil disimpan.');
+        return back()->with('success', 'Pengaturan berhasil disimpan.');
     }
 }

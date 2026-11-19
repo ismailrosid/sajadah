@@ -46,7 +46,7 @@ class CommunityController extends Controller
 
         Community::create($validated);
 
-        return back()->with('success', 'Komunitas baru berhasil ditambahkan.');
+        return back()->with('success', 'Komunitas berhasil ditambahkan.');
     }
 
     public function update(Request $request, Community $community): RedirectResponse

@@ -81,7 +81,7 @@ const toggleProcessActive = (proc) => {
 };
 
 const deleteProcess = (id) => {
-    if (confirm('Hapus konfigurasi alur persetujuan ini?')) {
+    if (confirm('Hapus alur approval ini?')) {
         const form = useForm({});
         form.delete(route('admin.approval-config.processes.destroy', id), {
             preserveScroll: true,

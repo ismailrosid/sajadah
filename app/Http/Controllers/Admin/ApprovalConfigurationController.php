@@ -65,7 +65,7 @@ class ApprovalConfigurationController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->back()->with('success', "Approval Role '{$validated['name']}' berhasil ditambahkan.");
+        return redirect()->back()->with('success', 'Role approval berhasil ditambahkan.');
     }
 
     public function updateRole(Request $request, ApprovalRole $role): RedirectResponse
@@ -78,7 +78,7 @@ class ApprovalConfigurationController extends Controller
 
         $role->update($validated);
 
-        return redirect()->back()->with('success', "Approval Role '{$role->name}' berhasil diperbarui.");
+        return redirect()->back()->with('success', 'Role approval berhasil diperbarui.');
     }
 
     public function destroyRole(ApprovalRole $role): RedirectResponse
@@ -86,7 +86,7 @@ class ApprovalConfigurationController extends Controller
         // If processes use this role, prevent deletion or dissociate safely
         $role->delete();
 
-        return redirect()->back()->with('success', 'Approval Role berhasil dihapus.');
+        return redirect()->back()->with('success', 'Role approval berhasil dihapus.');
     }
 
     public function storeProcess(Request $request): RedirectResponse
@@ -109,14 +109,14 @@ class ApprovalConfigurationController extends Controller
 
         if ($duplicate) {
             throw ValidationException::withMessages([
-                'approval_level' => "Tingkat approval level {$level} untuk user tersebut sudah ada yang aktif.",
+                'approval_level' => "Level approval {$level} sudah aktif.",
             ]);
         }
 
         // 2. Validation: Prevent Circular Approval
         if ($this->approvalService->wouldCreateCircularApproval($userId, $approverId)) {
             throw ValidationException::withMessages([
-                'approver_id' => 'Penugasan ditolak: terdeteksi alur persetujuan berputar (circular approval).',
+                'approver_id' => 'Gagal: terdeteksi alur approval berputar.',
             ]);
         }
 
@@ -128,7 +128,7 @@ class ApprovalConfigurationController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->back()->with('success', 'Alur approval berhasil dikonfigurasi.');
+        return redirect()->back()->with('success', 'Alur approval berhasil disimpan.');
     }
 
     public function updateProcess(Request $request, ApprovalProcess $process): RedirectResponse
@@ -152,13 +152,13 @@ class ApprovalConfigurationController extends Controller
 
             if ($duplicate) {
                 throw ValidationException::withMessages([
-                    'approval_level' => "Tingkat approval level {$level} untuk user tersebut sudah aktif pada konfigurasi lain.",
+                    'approval_level' => "Level approval {$level} sudah aktif.",
                 ]);
             }
 
             if ($this->approvalService->wouldCreateCircularApproval($userId, $approverId)) {
                 throw ValidationException::withMessages([
-                    'approver_id' => 'Penugasan ditolak: terdeteksi alur persetujuan berputar (circular approval).',
+                    'approver_id' => 'Gagal: terdeteksi alur approval berputar.',
                 ]);
             }
         }
@@ -170,13 +170,13 @@ class ApprovalConfigurationController extends Controller
             'is_active' => $validated['is_active'],
         ]);
 
-        return redirect()->back()->with('success', 'Konfigurasi alur approval berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Alur approval berhasil diperbarui.');
     }
 
     public function destroyProcess(ApprovalProcess $process): RedirectResponse
     {
         $process->delete();
 
-        return redirect()->back()->with('success', 'Konfigurasi approval berhasil dihapus.');
+        return redirect()->back()->with('success', 'Alur approval berhasil dihapus.');
     }
 }
