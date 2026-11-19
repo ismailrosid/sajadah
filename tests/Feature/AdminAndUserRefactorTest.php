@@ -540,4 +540,54 @@ class AdminAndUserRefactorTest extends TestCase
             ->where('targetUser.id', $this->userC->id)
         );
     }
+
+    /**
+     * Skenario 17: User yang tidak memiliki approver/atasan langsung auto-approved saat absensi.
+     */
+    public function test_17_user_without_approver_is_auto_approved(): void
+    {
+        Carbon::setTestNow(Carbon::today('Asia/Jakarta')->setTime(4, 25, 0));
+
+        // User C tidak memiliki konfigurasi approver
+        $this->assertDatabaseMissing('approval_processes', [
+            'user_id' => $this->userC->id,
+            'is_active' => true,
+        ]);
+
+        $photo = UploadedFile::fake()->image('selfie.jpg', 640, 480);
+
+        $response = $this->actingAs($this->userC)->post(route('member.attendance.store'), [
+            'prayer_type' => 'subuh',
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'gps_accuracy' => 10.0,
+            'photo' => $photo,
+        ]);
+
+        $response->assertRedirect(route('member.attendance.create'));
+
+        $attendance = Attendance::where('user_id', $this->userC->id)
+            ->where('prayer_type', PrayerType::Subuh)
+            ->first();
+
+        $this->assertNotNull($attendance);
+        // Status langsung Present (Disetujui), bukan pending
+        $this->assertEquals(AttendanceStatus::Present, $attendance->status);
+        $this->assertTrue($attendance->isApproved());
+
+        // Tidak masuk ke antrean pending approval
+        $this->assertDatabaseMissing('attendance_approvals', [
+            'attendance_id' => $attendance->id,
+            'status' => 'pending',
+        ]);
+
+        // Catatan approval tersimpan sebagai approved otomatis
+        $this->assertDatabaseHas('attendance_approvals', [
+            'attendance_id' => $attendance->id,
+            'status' => 'approved',
+            'approval_source' => 'auto_approved',
+        ]);
+
+        Carbon::setTestNow();
+    }
 }

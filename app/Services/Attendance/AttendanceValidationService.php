@@ -5,6 +5,7 @@ namespace App\Services\Attendance;
 use App\Enums\AttendanceStatus;
 use App\Enums\PrayerType;
 use App\Models\ActivityLog;
+use App\Models\ApprovalProcess;
 use App\Models\Attendance;
 use App\Models\AttendanceSetting;
 use App\Models\PrayerSchedule;
@@ -102,8 +103,18 @@ class AttendanceValidationService
             $isLateRequest = !empty($data['is_late_request']);
             $requestNotes = $data['request_notes'] ?? null;
 
-            // Status: selalu pending menunggu approval
-            $status = $isLateRequest ? AttendanceStatus::PendingApproval : AttendanceStatus::Pending;
+            // Check if user has active approval processes
+            $hasApprover = ApprovalProcess::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->exists();
+
+            // Status: Jika ada approver -> pending approval. Jika tidak ada approver -> langsung disetujui (auto approve)
+            if ($hasApprover) {
+                $status = $isLateRequest ? AttendanceStatus::PendingApproval : AttendanceStatus::Pending;
+            } else {
+                $status = $isLateRequest ? AttendanceStatus::Late : AttendanceStatus::Present;
+            }
+
             $rejectionReason = null;
             $riskScore = 0;
 
@@ -123,7 +134,7 @@ class AttendanceValidationService
                     ]);
                 }
 
-                $status = AttendanceStatus::PendingApproval;
+                $status = $hasApprover ? AttendanceStatus::PendingApproval : AttendanceStatus::Late;
             }
 
             // Check if next prayer has arrived (Susulan closed / Missed)

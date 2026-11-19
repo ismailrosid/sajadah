@@ -17,7 +17,7 @@ enum AttendanceStatus: string
         return match ($this) {
             self::Present => 'Tepat Waktu',
             self::Approved => 'Disetujui',
-            self::Late => 'Terlambat (Disetujui)',
+            self::Late => 'Terlambat',
             self::Rejected => 'Ditolak',
             self::Absent => 'Tidak Sholat',
             self::PendingApproval, self::Pending => 'Menunggu Persetujuan',

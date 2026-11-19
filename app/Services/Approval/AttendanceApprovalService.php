@@ -95,48 +95,26 @@ class AttendanceApprovalService
                 }
             }
         } else {
-            // User yang TIDAK memiliki alur approval khusus: Ikuti settingan kebijakan admin
-            $globalSetting = \App\Models\AttendanceSetting::getGlobalSetting();
-            $autoApprove = $globalSetting ? $globalSetting->auto_approve_ontime : true;
+            // User yang TIDAK memiliki alur approval / approver:
+            // Langsung auto-approve (Hadir / Terlambat) dan tidak masuk ke antrean pending approval ataupun admin.
+            $isLate = ($attendance->status === AttendanceStatus::Late
+                || $attendance->status === AttendanceStatus::PendingApproval
+                || !empty($attendance->metadata['is_late_request']));
+            $approvedStatus = $isLate ? AttendanceStatus::Late : AttendanceStatus::Present;
 
-            // Jika absensi susulan (late request), tetap butuh persetujuan/verifikasi
-            $isLateRequest = ($attendance->status === AttendanceStatus::PendingApproval);
+            $attendance->update([
+                'status' => $approvedStatus,
+            ]);
 
-            if ($autoApprove && !$isLateRequest) {
-                // Absensi tepat waktu langsung disetujui hadir mengikuti settingan validasi admin
-                $attendance->update([
-                    'status' => AttendanceStatus::Present,
-                ]);
-
-                AttendanceApproval::create([
-                    'attendance_id' => $attendance->id,
-                    'approver_id' => null,
-                    'approval_level' => 1,
-                    'status' => 'approved',
-                    'approval_source' => 'admin_settings',
-                    'note' => 'Disetujui otomatis mengikuti kebijakan validasi sistem admin (pengguna tidak memerlukan approver khusus).',
-                    'approved_at' => now(),
-                ]);
-            } else {
-                // Absensi susulan atau saat auto_approve nonaktif: berstatus pending persetujuan
-                $pendingStatus = $isLateRequest
-                    ? AttendanceStatus::PendingApproval
-                    : AttendanceStatus::Pending;
-
-                $attendance->update([
-                    'status' => $pendingStatus,
-                ]);
-
-                AttendanceApproval::create([
-                    'attendance_id' => $attendance->id,
-                    'approver_id' => null,
-                    'approval_level' => 1,
-                    'status' => 'pending',
-                    'note' => $isLateRequest
-                        ? 'Pengajuan absensi susulan menunggu verifikasi.'
-                        : 'Menunggu penugasan approver oleh Admin.',
-                ]);
-            }
+            AttendanceApproval::create([
+                'attendance_id' => $attendance->id,
+                'approver_id' => null,
+                'approval_level' => 1,
+                'status' => 'approved',
+                'approval_source' => 'auto_approved',
+                'note' => 'Disetujui otomatis karena pengguna tidak memiliki atasan/approver.',
+                'approved_at' => now(),
+            ]);
         }
     }
 
