@@ -34,15 +34,6 @@ const submit = () => {
     <GuestLayout>
         <Head title="Masuk Akun - SAJADA" />
 
-        <div class="mb-5 text-center">
-            <h1 class="text-xl font-bold tracking-tight text-slate-900">
-                Masuk ke SAJADA
-            </h1>
-            <p class="text-xs text-slate-500 mt-1">
-                Silakan masuk dengan akun terdaftar Anda
-            </p>
-        </div>
-
         <div v-if="status" class="mb-4 text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
             {{ status }}
         </div>

@@ -237,7 +237,22 @@ class AttendanceValidationService
                 $attendanceData['mosque_id'] = $data['mosque_id'] ?? null;
             }
 
-            $attendance = Attendance::create($attendanceData);
+            if ($isTestMode) {
+                $existing = Attendance::where('user_id', $user->id)
+                    ->where('prayer_type', $prayerType->value)
+                    ->whereDate('attendance_date', $todayDate)
+                    ->first();
+
+                if ($existing) {
+                    $existing->approvals()->delete();
+                    $existing->update($attendanceData);
+                    $attendance = $existing;
+                } else {
+                    $attendance = Attendance::create($attendanceData);
+                }
+            } else {
+                $attendance = Attendance::create($attendanceData);
+            }
 
             // 7. Initialize Dynamic Approval Workflow
             app(AttendanceApprovalService::class)->initializeApproval($attendance);

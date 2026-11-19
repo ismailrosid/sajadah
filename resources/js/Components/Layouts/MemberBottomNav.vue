@@ -20,21 +20,29 @@ const hasApprovalDuty = computed(() => Boolean(page.props.auth?.isApprover || pa
                 <span class="text-[10px] mt-1">Beranda</span>
             </Link>
 
-            <!-- Center Action FAB: Absen Sholat -->
-            <div class="relative -top-3.5 flex-1 flex flex-col items-center justify-center">
+            <!-- Center Action FAB / Normal Item: Absen Sholat -->
+            <!-- Jika di halaman absensi, tampil sejajar dan ukuran normal seperti menu lainnya -->
+            <Link
+                v-if="route().current('member.attendance.*')"
+                :href="route('member.attendance.create')"
+                class="flex flex-col items-center justify-center flex-1 py-1 transition text-emerald-600 font-bold"
+            >
+                <Camera class="w-5 h-5" />
+                <span class="text-[10px] mt-1">Absen</span>
+            </Link>
+
+            <!-- Jika di halaman lain (Beranda/Riwayat), tampil sebagai FAB menonjol tengah -->
+            <div
+                v-else
+                class="relative -top-3.5 flex-1 flex flex-col items-center justify-center"
+            >
                 <Link
                     :href="route('member.attendance.create')"
-                    class="w-12 h-12 rounded-full flex items-center justify-center ring-4 transition transform active:scale-95 focus:outline-none"
-                    :class="route().current('member.attendance.*')
-                        ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-700/30 ring-emerald-100 scale-105'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 border border-slate-200/80 ring-white shadow-xs'"
+                    class="w-12 h-12 rounded-full flex items-center justify-center ring-4 transition transform active:scale-95 focus:outline-none bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 border border-slate-200/80 ring-white shadow-xs"
                 >
                     <Camera class="w-5 h-5" />
                 </Link>
-                <span
-                    class="text-[10px] mt-0.5 transition"
-                    :class="route().current('member.attendance.*') ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600'"
-                >
+                <span class="text-[10px] mt-0.5 text-slate-400 hover:text-slate-600 transition">
                     Absen
                 </span>
             </div>

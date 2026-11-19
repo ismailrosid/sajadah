@@ -590,4 +590,43 @@ class AdminAndUserRefactorTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    /**
+     * Skenario 18: Mode uji coba (ATTENDANCE_TEST_MODE) dapat melakukan absensi berulang pada waktu sholat yang sama tanpa UniqueConstraintViolationException.
+     */
+    public function test_18_test_mode_allows_repeat_attendance_without_unique_constraint_violation(): void
+    {
+        putenv('ATTENDANCE_TEST_MODE=true');
+        $_ENV['ATTENDANCE_TEST_MODE'] = 'true';
+
+        $photo = UploadedFile::fake()->image('test1.jpg', 640, 480);
+
+        // Absensi pertama
+        $this->actingAs($this->userC)->post(route('member.attendance.store'), [
+            'prayer_type' => 'subuh',
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'photo' => $photo,
+        ]);
+
+        $this->assertDatabaseHas('attendances', [
+            'user_id' => $this->userC->id,
+            'prayer_type' => 'subuh',
+        ]);
+
+        // Absensi kedua di sholat & tanggal yang sama (dalam test mode)
+        $photo2 = UploadedFile::fake()->image('test2.jpg', 640, 480);
+        $res = $this->actingAs($this->userC)->post(route('member.attendance.store'), [
+            'prayer_type' => 'subuh',
+            'latitude' => -6.2090,
+            'longitude' => 106.8460,
+            'photo' => $photo2,
+        ]);
+
+        $res->assertRedirect(route('member.attendance.create'));
+        $this->assertEquals(1, Attendance::where('user_id', $this->userC->id)->where('prayer_type', 'subuh')->count());
+
+        putenv('ATTENDANCE_TEST_MODE=false');
+        $_ENV['ATTENDANCE_TEST_MODE'] = 'false';
+    }
 }

@@ -261,7 +261,7 @@ const submitAttendance = () => {
                         :key="key"
                         type="button"
                         @click="selectedPrayerType = key"
-                        class="p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-between gap-1"
+                        class="px-1 py-2 sm:px-2 sm:py-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-between gap-1 overflow-hidden"
                         :class="[
                             selectedPrayerType === key
                                 ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20 font-bold'
@@ -280,35 +280,39 @@ const submitAttendance = () => {
                         <!-- Badges on button -->
                         <span
                             v-if="prayer.attended"
-                            class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                            :class="selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'"
+                            class="text-[7.5px] leading-tight font-bold px-1 py-0.5 rounded-md tracking-tighter whitespace-nowrap inline-block"
+                            :class="[
+                                prayer.status === 'late'
+                                    ? (selectedPrayerType === key ? 'bg-amber-300 text-amber-950 border border-amber-400' : 'bg-amber-100 text-amber-800 border border-amber-200')
+                                    : (selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700')
+                            ]"
                         >
                             {{ prayer.status_label || 'Sudah' }}
                         </span>
                         <span
                             v-else-if="prayer.window_status === 'open' || prayer.is_open"
-                            class="text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
+                            class="text-[8.5px] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
                             :class="selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-emerald-200 text-emerald-800'"
                         >
                             Buka
                         </span>
                         <span
                             v-else-if="prayer.can_late"
-                            class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                            class="text-[8.5px] font-semibold px-1 py-0.5 rounded-full"
                             :class="selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'"
                         >
                             Susulan
                         </span>
                         <span
                             v-else-if="prayer.is_missed || prayer.window_status === 'missed'"
-                            class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                            class="text-[8.5px] font-semibold px-1 py-0.5 rounded-full"
                             :class="selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-800'"
                         >
                             Tutup
                         </span>
                         <span
                             v-else
-                            class="text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+                            class="text-[8.5px] font-medium px-1.5 py-0.5 rounded-full"
                             :class="selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400'"
                         >
                             Belum
@@ -325,7 +329,7 @@ const submitAttendance = () => {
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                             :class="[
                                 isAlreadyAttended
-                                    ? 'bg-emerald-100 text-emerald-700'
+                                    ? (selectedPrayer?.status === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700')
                                     : isWindowOpen
                                     ? 'bg-emerald-100 text-emerald-700 animate-pulse'
                                     : isWindowClosed

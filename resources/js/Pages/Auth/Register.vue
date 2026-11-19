@@ -27,11 +27,11 @@ const submit = () => {
         <Head title="Daftar Akun Baru - SAJADA" />
 
         <div class="mb-5 text-center">
-            <h1 class="text-xl font-bold tracking-tight text-slate-900">
-                Buat Akun SAJADA
+            <h1 class="text-base font-bold tracking-tight text-slate-900">
+                Daftar Akun Baru
             </h1>
-            <p class="text-xs text-slate-500 mt-1">
-                Aplikasi pencatat dan pemantau konsistensi ibadah sholat lima waktu pribadi Anda
+            <p class="text-xs text-slate-500 mt-0.5">
+                Lengkapi formulir di bawah untuk mulai menggunakan aplikasi
             </p>
         </div>
 
