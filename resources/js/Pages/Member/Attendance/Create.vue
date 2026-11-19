@@ -280,14 +280,23 @@ const submitAttendance = () => {
                         <!-- Badges on button -->
                         <span
                             v-if="prayer.attended"
-                            class="text-[7.5px] leading-tight font-bold px-1 py-0.5 rounded-md tracking-tighter whitespace-nowrap inline-block"
+                            class="text-[7.5px] leading-tight font-bold px-1 py-0.5 rounded-md tracking-tighter whitespace-nowrap inline-flex items-center gap-0.5"
                             :class="[
-                                prayer.status === 'late'
+                                (prayer.status === 'pending' || prayer.status === 'pending_approval')
+                                    ? (selectedPrayerType === key ? 'bg-amber-300 text-amber-950 border border-amber-400' : 'bg-amber-100 text-amber-800 border border-amber-200')
+                                    : (prayer.is_rejected || prayer.status === 'rejected')
+                                    ? (selectedPrayerType === key ? 'bg-rose-300 text-rose-950 border border-rose-400' : 'bg-rose-100 text-rose-800 border border-rose-200')
+                                    : prayer.status === 'late'
                                     ? (selectedPrayerType === key ? 'bg-amber-300 text-amber-950 border border-amber-400' : 'bg-amber-100 text-amber-800 border border-amber-200')
                                     : (selectedPrayerType === key ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700')
                             ]"
                         >
-                            {{ prayer.status_label || 'Sudah' }}
+                            <!-- Ikon ceklis centang jika disetujui approver -->
+                            <CheckCircle v-if="prayer.is_approver_verified" class="w-2.5 h-2.5 shrink-0" />
+                            <!-- Ikon silang jika ditolak approver -->
+                            <XCircle v-else-if="prayer.is_rejected || prayer.status === 'rejected'" class="w-2.5 h-2.5 shrink-0" />
+
+                            <span>{{ (prayer.status === 'pending' || prayer.status === 'pending_approval') ? 'Menunggu' : (prayer.status_label || 'Sudah') }}</span>
                         </span>
                         <span
                             v-else-if="prayer.window_status === 'open' || prayer.is_open"
@@ -329,7 +338,7 @@ const submitAttendance = () => {
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                             :class="[
                                 isAlreadyAttended
-                                    ? (selectedPrayer?.status === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700')
+                                    ? ((selectedPrayer?.status === 'pending' || selectedPrayer?.status === 'pending_approval' || selectedPrayer?.status === 'late') ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700')
                                     : isWindowOpen
                                     ? 'bg-emerald-100 text-emerald-700 animate-pulse'
                                     : isWindowClosed
@@ -339,7 +348,8 @@ const submitAttendance = () => {
                                     : 'bg-slate-100 text-slate-500'
                             ]"
                         >
-                            <XCircle v-if="isMissed && !isAlreadyAttended" class="w-5 h-5" />
+                            <Clock v-if="selectedPrayer?.status === 'pending' || selectedPrayer?.status === 'pending_approval'" class="w-5 h-5 text-amber-600 animate-pulse" />
+                            <XCircle v-else-if="isMissed && !isAlreadyAttended" class="w-5 h-5" />
                             <Clock v-else class="w-5 h-5" />
                         </div>
                         <div>
@@ -352,29 +362,57 @@ const submitAttendance = () => {
                         </div>
                     </div>
 
-                    <!-- Status Pill -->
-                    <!-- <div>
-                        <span v-if="isAlreadyAttended" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                            <CheckCircle class="w-3.5 h-3.5" />
-                            {{ selectedPrayer.status_label || 'Tercatat' }}
-                        </span>
-                        <span v-else-if="isWindowOpen" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
-                            Periode Absensi Terbuka
-                        </span>
-                        <span v-else-if="isWindowClosed" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                            <AlertTriangle class="w-3.5 h-3.5" />
-                            Periode Berakhir (Susulan)
-                        </span>
-                        <span v-else-if="isMissed" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
-                            <XCircle class="w-3.5 h-3.5" />
-                            Absensi Ditutup (Terlewat)
-                        </span>
-                        <span v-else-if="isUpcoming" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                            <Clock class="w-3.5 h-3.5" />
-                            Waktu Sholat Belum Masuk
-                        </span>
-                    </div> -->
+                    <!-- Status Pill (Jelas & Rapih di Semua Ukuran Layar) -->
+                    <div class="flex items-center">
+                        <template v-if="isAlreadyAttended">
+                            <span
+                                v-if="selectedPrayer?.status === 'pending' || selectedPrayer?.status === 'pending_approval'"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200"
+                            >
+                                <Clock class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                                <span>Menunggu Persetujuan</span>
+                            </span>
+                            <span
+                                v-else-if="selectedPrayer?.is_rejected || selectedPrayer?.status === 'rejected'"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200"
+                            >
+                                <XCircle class="w-3.5 h-3.5 text-rose-600" />
+                                <span>Tidak Sholat</span>
+                            </span>
+                            <span
+                                v-else-if="selectedPrayer?.status === 'late'"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200"
+                            >
+                                <CheckCircle v-if="selectedPrayer?.is_approver_verified" class="w-3.5 h-3.5 text-amber-600" />
+                                <span>Terlambat</span>
+                            </span>
+                            <span
+                                v-else
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            >
+                                <CheckCircle v-if="selectedPrayer?.is_approver_verified" class="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Tepat Waktu</span>
+                            </span>
+                        </template>
+                        <template v-else-if="isWindowOpen">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+                                <span>Periode Terbuka</span>
+                            </span>
+                        </template>
+                        <template v-else-if="isWindowClosed">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                                <AlertTriangle class="w-3.5 h-3.5" />
+                                <span>Susulan</span>
+                            </span>
+                        </template>
+                        <template v-else-if="isMissed">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+                                <XCircle class="w-3.5 h-3.5" />
+                                <span>Ditutup (Terlewat)</span>
+                            </span>
+                        </template>
+                    </div>
                 </div>
 
                 <!-- Upcoming Notice -->

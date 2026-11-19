@@ -228,55 +228,44 @@ const closeDetail = () => {
                                     </div>
                                 </td>
 
-                                <!-- Kolom 2: Status (Mobile: icon saja, Laptop: text saja tanpa badge) -->
+                                <!-- Kolom 2: Status (Seragam 4 Status Utama) -->
                                 <td class="py-3.5 px-2 sm:px-4 text-center">
-                                    <!-- Disetujui / Tepat Waktu -->
-                                    <template v-if="att.status === 'present' || att.status === 'approved'">
-                                        <span class="sm:hidden inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700" :title="att.status_label">
-                                            <CheckCircle2 class="w-4 h-4 text-emerald-600" />
+                                    <!-- Menunggu Approval -->
+                                    <template v-if="att.status === 'pending' || att.status === 'pending_approval'">
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                                            <Clock class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                                            <span>Menunggu</span>
                                         </span>
-                                        <span class="hidden sm:inline text-xs font-semibold text-emerald-600">
-                                            {{ att.status_label }}
+                                    </template>
+
+                                    <!-- Ditolak -> Tidak Sholat dengan ikon [X] -->
+                                    <template v-else-if="att.is_rejected || att.status === 'rejected'">
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                                            <XCircle class="w-3.5 h-3.5 text-rose-600" />
+                                            <span>Tidak Sholat</span>
                                         </span>
                                     </template>
 
                                     <!-- Terlambat -->
                                     <template v-else-if="att.status === 'late'">
-                                        <span class="sm:hidden inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700" :title="att.status_label">
-                                            <Clock class="w-4 h-4 text-amber-600" />
-                                        </span>
-                                        <span class="hidden sm:inline text-xs font-semibold text-amber-600">
-                                            {{ att.status_label }}
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                                            <CheckCircle2 v-if="att.is_approver_verified" class="w-3.5 h-3.5 text-amber-600" />
+                                            <span>Terlambat</span>
                                         </span>
                                     </template>
 
-                                    <!-- Menunggu Persetujuan -->
-                                    <template v-else-if="att.status === 'pending' || att.status === 'pending_approval'">
-                                        <span class="sm:hidden inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700" :title="att.status_label">
-                                            <Clock class="w-4 h-4 text-blue-600" />
-                                        </span>
-                                        <span class="hidden sm:inline text-xs font-semibold text-blue-600">
-                                            {{ att.status_label }}
-                                        </span>
-                                    </template>
-
-                                    <!-- Ditolak -->
-                                    <template v-else-if="att.status === 'rejected'">
-                                        <span class="sm:hidden inline-flex items-center justify-center w-7 h-7 rounded-full bg-rose-100 text-rose-700" :title="att.status_label">
-                                            <XCircle class="w-4 h-4 text-rose-600" />
-                                        </span>
-                                        <span class="hidden sm:inline text-xs font-semibold text-rose-600">
-                                            {{ att.status_label }}
+                                    <!-- Tepat Waktu -->
+                                    <template v-else-if="att.status === 'present' || att.status === 'approved'">
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                            <CheckCircle2 v-if="att.is_approver_verified" class="w-3.5 h-3.5 text-emerald-600" />
+                                            <span>Tepat Waktu</span>
                                         </span>
                                     </template>
 
                                     <!-- Tidak Sholat -->
                                     <template v-else>
-                                        <span class="sm:hidden inline-flex items-center justify-center w-7 h-7 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60" :title="att.status_label || 'Tidak Sholat'">
-                                            <XCircle class="w-4 h-4 text-rose-500" />
-                                        </span>
-                                        <span class="hidden sm:inline text-xs font-semibold text-rose-500">
-                                            {{ att.status_label || 'Tidak Sholat' }}
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                                            <span>Tidak Sholat</span>
                                         </span>
                                     </template>
                                 </td>

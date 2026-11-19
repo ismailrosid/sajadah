@@ -47,7 +47,8 @@ class DashboardController extends Controller
         }
 
         // 2. Get today's personal attendances for user
-        $todayAttendances = Attendance::where('user_id', $user->id)
+        $todayAttendances = Attendance::with('approvals')
+            ->where('user_id', $user->id)
             ->whereDate('attendance_date', $todayStr)
             ->get()
             ->keyBy(fn($a) => $a->prayer_type->value);
@@ -110,6 +111,8 @@ class DashboardController extends Controller
                 'status' => $att?->status->value,
                 'status_label' => $att?->status->label(),
                 'status_color' => $att?->status->color(),
+                'is_approver_verified' => $att ? $att->isApprovedByApprover() : false,
+                'is_rejected' => $att ? $att->isRejectedByApprover() : false,
                 'recorded_at' => $isActuallyAttended && $att->server_timestamp ? $att->server_timestamp->format('H:i') : null,
                 'distance' => $att?->distance_meters,
             ];

@@ -125,7 +125,7 @@ const resetFilters = () => {
                                 type="text"
                                 v-model="search"
                                 placeholder="YYYY-MM-DD atau nama..."
-                                class="w-full text-xs rounded-xl border-slate-200 py-2 pl-8 pr-3 text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"
+                                class="w-full text-xs font-normal rounded-xl border border-slate-200 py-2 pl-8 pr-3 text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500 shadow-xs"
                                 @keyup.enter="applyFilters"
                             />
                             <Search class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />

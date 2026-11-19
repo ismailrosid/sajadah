@@ -15,12 +15,10 @@ enum AttendanceStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Present => 'Tepat Waktu',
-            self::Approved => 'Disetujui',
+            self::Present, self::Approved => 'Tepat Waktu',
             self::Late => 'Terlambat',
-            self::Rejected => 'Ditolak',
-            self::Absent => 'Tidak Sholat',
-            self::PendingApproval, self::Pending => 'Menunggu Persetujuan',
+            self::Rejected, self::Absent => 'Tidak Sholat',
+            self::PendingApproval, self::Pending => 'Menunggu',
         };
     }
 

@@ -109,4 +109,18 @@ class Attendance extends Model
     {
         return ($this->status->value ?? $this->status) === 'rejected';
     }
+
+    public function isApprovedByApprover(): bool
+    {
+        return !empty($this->approved_by)
+            || $this->approval_source === 'approver'
+            || ($this->relationLoaded('approvals')
+                ? $this->approvals->whereNotNull('approver_id')->where('status', 'approved')->isNotEmpty()
+                : $this->approvals()->whereNotNull('approver_id')->where('status', 'approved')->exists());
+    }
+
+    public function isRejectedByApprover(): bool
+    {
+        return $this->isRejected();
+    }
 }

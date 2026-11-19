@@ -202,7 +202,7 @@ onUnmounted(() => {
         <button
             type="button"
             @click="togglePicker"
-            class="w-full text-left rounded-xl border bg-white py-2 px-3 text-xs font-medium text-slate-800 shadow-xs transition-all flex items-center justify-between gap-2 cursor-pointer focus:outline-none"
+            class="w-full text-left rounded-xl border bg-white py-2 px-3 text-xs font-normal text-slate-700 shadow-xs transition-all flex items-center justify-between gap-2 cursor-pointer focus:outline-none"
             :class="[
                 isOpen
                     ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
@@ -211,7 +211,7 @@ onUnmounted(() => {
         >
             <div class="flex items-center gap-2 truncate flex-1">
                 <CalendarIcon class="w-4 h-4 text-slate-400 flex-shrink-0" :class="{ 'text-emerald-600': isOpen || modelValue }" />
-                <span v-if="modelValue" class="text-slate-800 font-semibold truncate">
+                <span v-if="modelValue" class="text-slate-700 font-medium truncate">
                     {{ formattedDisplay }}
                 </span>
                 <span v-else class="text-slate-400 font-normal truncate">

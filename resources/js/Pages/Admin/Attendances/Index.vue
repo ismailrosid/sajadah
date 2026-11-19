@@ -107,7 +107,7 @@ const applyFilters = () => {
                         @keyup.enter="applyFilters"
                         type="text"
                         placeholder="Cari nama atau email pengguna..."
-                        class="w-full text-xs rounded-xl border-slate-200 pl-8 pr-3 py-2 focus:border-emerald-500 focus:ring-emerald-500"
+                        class="w-full text-xs font-normal rounded-xl border border-slate-200 pl-8 pr-3 py-2 text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500 shadow-xs"
                     />
                 </div>
 
@@ -183,7 +183,7 @@ const applyFilters = () => {
                                 </td>
                                 <td class="py-3 px-4">
                                     <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold"
                                         :class="[
                                             a.status === 'present' || a.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : '',
                                             a.status === 'late' ? 'bg-amber-100 text-amber-800' : '',
@@ -191,7 +191,9 @@ const applyFilters = () => {
                                             a.status === 'rejected' ? 'bg-rose-100 text-rose-800' : ''
                                         ]"
                                     >
-                                        {{ a.status_label }}
+                                        <CheckCircle2 v-if="a.is_approver_verified" class="w-3 h-3 text-emerald-600" />
+                                        <XCircle v-else-if="a.is_rejected" class="w-3 h-3 text-rose-600" />
+                                        <span>{{ a.status_label }}</span>
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-slate-600 text-[11px]">

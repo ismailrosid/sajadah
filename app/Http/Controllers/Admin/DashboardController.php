@@ -68,7 +68,7 @@ class DashboardController extends Controller
         }
 
         // 4. Recent Live Attendance Stream
-        $recentAttendances = Attendance::with('user')
+        $recentAttendances = Attendance::with(['user', 'approvals'])
             ->latest('server_timestamp')
             ->limit(10)
             ->get()
@@ -82,6 +82,8 @@ class DashboardController extends Controller
                 'status' => $a->status->value,
                 'status_label' => $a->status->label(),
                 'status_color' => $a->status->color(),
+                'is_approver_verified' => $a->isApprovedByApprover(),
+                'is_rejected' => $a->isRejectedByApprover(),
                 'distance_meters' => $a->distance_meters,
             ]);
 

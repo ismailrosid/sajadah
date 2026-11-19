@@ -48,7 +48,8 @@ class AttendanceMonitoringController extends Controller
             });
         }
 
-        $attendances = $query->paginate(20)
+        $attendances = $query->with(['user', 'approver', 'approvals'])
+            ->paginate(20)
             ->withQueryString()
             ->through(fn($a) => [
                 'id' => $a->id,
@@ -63,6 +64,8 @@ class AttendanceMonitoringController extends Controller
                 'status' => $a->status->value,
                 'status_label' => $a->status->label(),
                 'status_color' => $a->status->color(),
+                'is_approver_verified' => $a->isApprovedByApprover(),
+                'is_rejected' => $a->isRejectedByApprover(),
                 'has_photo' => !empty($a->photo_path),
                 'photo_url' => !empty($a->photo_path) ? route('member.attendance.photo', $a->id) : null,
                 'latitude' => $a->latitude,

@@ -102,7 +102,7 @@ onUnmounted(() => {
         <button
             type="button"
             @click="toggleDropdown"
-            class="w-full text-left rounded-xl border bg-white py-2.5 px-3.5 text-xs font-medium text-slate-800 shadow-xs transition-all flex items-center justify-between gap-2 cursor-pointer focus:outline-none"
+            class="w-full text-left rounded-xl border bg-white py-2 px-3 text-xs font-normal text-slate-700 shadow-xs transition-all flex items-center justify-between gap-2 cursor-pointer focus:outline-none"
             :class="[
                 isOpen
                     ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
@@ -110,14 +110,17 @@ onUnmounted(() => {
             ]"
         >
             <div class="truncate flex-1" v-if="selectedOption">
-                <span class="text-slate-800 font-semibold block truncate">
+                <span
+                    class="block truncate text-xs"
+                    :class="selectedOption.value === '' ? 'text-slate-500 font-normal' : 'text-slate-700 font-medium'"
+                >
                     {{ selectedOption.label }}
                 </span>
                 <span v-if="selectedOption.sublabel" class="text-[11px] text-slate-400 block truncate">
                     {{ selectedOption.sublabel }}
                 </span>
             </div>
-            <span class="text-slate-400 font-normal" v-else>
+            <span class="text-slate-400 font-normal text-xs" v-else>
                 {{ placeholder }}
             </span>
 

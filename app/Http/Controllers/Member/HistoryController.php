@@ -79,7 +79,8 @@ class HistoryController extends Controller
             }
         }
 
-        $attendances = $query->orderByDesc('attendance_date')
+        $attendances = $query->with('approvals')
+            ->orderByDesc('attendance_date')
             ->orderByDesc('server_timestamp')
             ->paginate(15)
             ->withQueryString()
@@ -94,6 +95,8 @@ class HistoryController extends Controller
                 'status' => $a->status->value,
                 'status_label' => $a->status->label(),
                 'status_color' => $a->status->color(),
+                'is_approver_verified' => $a->isApprovedByApprover(),
+                'is_rejected' => $a->isRejectedByApprover(),
                 'distance_meters' => $a->distance_meters,
                 'gps_accuracy' => $a->gps_accuracy,
                 'latitude' => $a->latitude,

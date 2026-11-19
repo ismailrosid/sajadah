@@ -50,7 +50,8 @@ class AttendanceController extends Controller
         }
 
         // 2. Get user's attendance status today
-        $todayAttendances = Attendance::where('user_id', $user->id)
+        $todayAttendances = Attendance::with('approvals')
+            ->where('user_id', $user->id)
             ->whereDate('attendance_date', $todayDate)
             ->get()
             ->keyBy(fn($a) => $a->prayer_type->value);
@@ -82,6 +83,8 @@ class AttendanceController extends Controller
                 'status' => $att?->status->value,
                 'status_label' => $att?->status->label(),
                 'status_color' => $att?->status->color(),
+                'is_approver_verified' => $att ? $att->isApprovedByApprover() : false,
+                'is_rejected' => $att ? $att->isRejectedByApprover() : false,
                 'time_recorded' => $isActuallyAttended && $att->server_timestamp ? $att->server_timestamp->format('H:i') : null,
                 'distance' => $att?->distance_meters,
                 'request_notes' => $att?->request_notes,

@@ -245,18 +245,23 @@ onUnmounted(() => {
                         <div class="col-span-5 sm:w-full flex items-center justify-end sm:justify-start sm:mt-2">
                             <template v-if="prayer.attended && prayer.status !== 'absent'">
                                 <span
-                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all duration-200 hover:scale-105 cursor-default whitespace-nowrap"
+                                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-all duration-200 hover:scale-105 cursor-default whitespace-nowrap"
                                     :class="[
-                                        prayer.status === 'present' || prayer.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : '',
+                                        prayer.status === 'present' || prayer.status === 'approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : '',
                                         prayer.status === 'pending' || prayer.status === 'pending_approval' ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-200' : '',
-                                        prayer.status === 'late' ? 'bg-orange-100 text-orange-800' : '',
-                                        prayer.status === 'rejected' ? 'bg-rose-100 text-rose-800' : ''
+                                        prayer.status === 'late' ? 'bg-amber-100 text-amber-800 border border-amber-200' : '',
+                                        prayer.status === 'rejected' ? 'bg-rose-100 text-rose-800 border border-rose-200' : ''
                                     ]"
                                     :title="prayer.status_label"
                                 >
+                                    <!-- Jika Pending: Ikon jam -->
                                     <Clock v-if="prayer.status === 'pending' || prayer.status === 'pending_approval'" class="w-3 h-3 text-amber-600 animate-pulse shrink-0" />
-                                    <XCircle v-else-if="prayer.status === 'rejected'" class="w-3 h-3 text-rose-600 shrink-0" />
-                                    <CheckCircle2 v-else class="w-3 h-3 text-emerald-600 shrink-0" />
+                                    <!-- Jika Ditolak: Ikon silang [X] -->
+                                    <XCircle v-else-if="prayer.is_rejected || prayer.status === 'rejected'" class="w-3 h-3 text-rose-600 shrink-0" />
+                                    <!-- Jika Disetujui oleh Approver: Ikon ceklis [✓] -->
+                                    <CheckCircle2 v-else-if="prayer.is_approver_verified" class="w-3 h-3 shrink-0" :class="prayer.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
+                                    <!-- Jika Normal (Tidak melewati approval): Polos tanpa ikon -->
+
                                     <span>{{ (prayer.status === 'pending' || prayer.status === 'pending_approval') ? 'Menunggu' : prayer.status_label }}</span>
                                 </span>
                             </template>

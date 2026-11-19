@@ -1,7 +1,7 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Users, Clock, CheckCircle2, AlertTriangle, Eye, ArrowRight, ClipboardCheck, Check, X, Shield, UserCheck } from 'lucide-vue-next';
+import { Users, Clock, CheckCircle2, XCircle, AlertTriangle, Eye, ArrowRight, ClipboardCheck, Check, X, Shield, UserCheck } from 'lucide-vue-next';
 
 defineProps({
     metrics: Object,
@@ -238,15 +238,17 @@ const reject = (id) => {
 
                         <div class="flex items-center gap-3">
                             <span
-                                class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold"
                                 :class="[
-                                    a.status === 'present' ? 'bg-emerald-100 text-emerald-800' : '',
+                                    a.status === 'present' || a.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : '',
                                     a.status === 'late' ? 'bg-amber-100 text-amber-800' : '',
-                                    a.status === 'pending_approval' ? 'bg-amber-100 text-amber-800' : '',
+                                    a.status === 'pending_approval' || a.status === 'pending' ? 'bg-amber-100 text-amber-800' : '',
                                     a.status === 'rejected' ? 'bg-rose-100 text-rose-800' : ''
                                 ]"
                             >
-                                {{ a.status_label }}
+                                <CheckCircle2 v-if="a.is_approver_verified" class="w-3 h-3 text-emerald-600" />
+                                <XCircle v-else-if="a.is_rejected" class="w-3 h-3 text-rose-600" />
+                                <span>{{ a.status_label }}</span>
                             </span>
                             <span class="font-mono text-slate-400 text-[11px]">{{ a.time }}</span>
                         </div>
