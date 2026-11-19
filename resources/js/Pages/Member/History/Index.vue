@@ -123,28 +123,6 @@ const getStatusBadgeClasses = (att) => {
     }
     return 'bg-slate-100 text-slate-700 border-slate-200';
 };
-
-const getRowClasses = (att) => {
-    if (!att) return 'hover:bg-slate-50/70';
-    if (att.status === 'present' || att.status === 'approved') {
-        return 'bg-emerald-50/40 hover:bg-emerald-50/70 border-l-4 border-l-emerald-500';
-    }
-    if (att.status === 'pending' || att.status === 'pending_approval') {
-        return 'bg-amber-50/30 hover:bg-amber-50/60 border-l-4 border-l-amber-400';
-    }
-    if (att.status === 'late') {
-        return 'bg-amber-50/40 hover:bg-amber-50/70 border-l-4 border-l-amber-500';
-    }
-    if (att.status === 'rejected' || att.status === 'absent' || att.is_rejected) {
-        return 'bg-rose-50/40 hover:bg-rose-50/70 border-l-4 border-l-rose-500';
-    }
-    return 'hover:bg-slate-50/70';
-};
-
-const hasApprovalStatus = (att) => {
-    if (!att) return false;
-    return !!(att.is_approver_verified || att.is_rejected || att.status === 'rejected' || att.status === 'pending' || att.status === 'pending_approval');
-};
 </script>
 
 <template>
@@ -290,8 +268,7 @@ const hasApprovalStatus = (att) => {
                             <tr
                                 v-for="att in attendances.data"
                                 :key="att.id"
-                                class="transition border-b border-slate-100/70"
-                                :class="getRowClasses(att)"
+                                class="hover:bg-slate-50/70 transition border-b border-slate-100"
                             >
                                 <!-- Kolom 1: Sholat (Murni nama sholat, tanpa ikon) -->
                                 <td class="py-3.5 px-3 sm:px-6 font-bold text-slate-900 text-sm">
@@ -392,13 +369,10 @@ const hasApprovalStatus = (att) => {
                                     </td>
                                     <td class="py-2.5 px-4 font-bold">
                                         <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border"
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border"
                                             :class="getStatusBadgeClasses(selectedAttendance)"
                                         >
-                                            <CheckCircle2 v-if="selectedAttendance.is_approver_verified" class="w-3.5 h-3.5" :class="selectedAttendance.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
-                                            <XCircle v-else-if="selectedAttendance.is_rejected || selectedAttendance.status === 'rejected'" class="w-3.5 h-3.5 text-rose-600" />
-                                            <Clock v-else-if="selectedAttendance.status === 'pending' || selectedAttendance.status === 'pending_approval'" class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                                            <span>{{ getDetailStatusLabel(selectedAttendance) }}</span>
+                                            {{ getDetailStatusLabel(selectedAttendance) }}
                                         </span>
                                     </td>
                                 </tr>
