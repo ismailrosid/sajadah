@@ -124,6 +124,23 @@ const getStatusBadgeClasses = (att) => {
     return 'bg-slate-100 text-slate-700 border-slate-200';
 };
 
+const getRowClasses = (att) => {
+    if (!att) return 'hover:bg-slate-50/70';
+    if (att.status === 'present' || att.status === 'approved') {
+        return 'bg-emerald-50/40 hover:bg-emerald-50/70 border-l-4 border-l-emerald-500';
+    }
+    if (att.status === 'pending' || att.status === 'pending_approval') {
+        return 'bg-amber-50/30 hover:bg-amber-50/60 border-l-4 border-l-amber-400';
+    }
+    if (att.status === 'late') {
+        return 'bg-amber-50/40 hover:bg-amber-50/70 border-l-4 border-l-amber-500';
+    }
+    if (att.status === 'rejected' || att.status === 'absent' || att.is_rejected) {
+        return 'bg-rose-50/40 hover:bg-rose-50/70 border-l-4 border-l-rose-500';
+    }
+    return 'hover:bg-slate-50/70';
+};
+
 const hasApprovalStatus = (att) => {
     if (!att) return false;
     return !!(att.is_approver_verified || att.is_rejected || att.status === 'rejected' || att.status === 'pending' || att.status === 'pending_approval');
@@ -263,8 +280,9 @@ const hasApprovalStatus = (att) => {
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                <th class="py-3 px-4 sm:px-6">Sholat & Waktu</th>
-                                <th class="py-3 px-2 sm:px-4 text-center">Status</th>
+                                <th class="py-3 px-4 sm:px-6">Sholat</th>
+                                <th class="py-3 px-2 sm:px-4 text-center">Waktu</th>
+                                <th class="hidden sm:table-cell py-3 px-4 text-center">Status</th>
                                 <th class="py-3 px-4 sm:px-6 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -272,77 +290,63 @@ const hasApprovalStatus = (att) => {
                             <tr
                                 v-for="att in attendances.data"
                                 :key="att.id"
-                                class="hover:bg-slate-50/70 transition"
+                                class="transition border-b border-slate-100/70"
+                                :class="getRowClasses(att)"
                             >
-                                <!-- Kolom 1: Sholat & Waktu -->
+                                <!-- Kolom 1: Sholat (Mobile & Desktop) -->
                                 <td class="py-3.5 px-4 sm:px-6">
-                                    <div class="text-sm font-bold text-slate-900">
-                                        {{ att.prayer_label }}
-                                    </div>
-                                    <div class="text-[11px] text-slate-500 mt-0.5">
-                                        <span>{{ att.attendance_date }} &bull; {{ att.time }}</span>
-                                    </div>
-                                </td>
-
-                                <!-- Kolom 2: Status (Mobile: Ikon Bulat + Floating Tooltip Badge saat di-hover/sentuh, Laptop: Pill Badge Lengkap) -->
-                                <td class="py-3.5 px-2 sm:px-4 text-center">
-                                    <div class="group relative inline-flex items-center justify-center">
-                                        <!-- Floating Badge Tooltip saat di-hover/sentuh (Khusus Mobile) -->
-                                        <div
-                                            class="sm:hidden pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-all duration-200 z-30"
-                                        >
-                                            <span
-                                                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shadow-md whitespace-nowrap cursor-default"
-                                                :class="getStatusBadgeClasses(att)"
-                                            >
-                                                <!-- Ikon di dalam badge HANYA jika melewati approval / pending -->
-                                                <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-3 h-3 text-amber-600 animate-pulse shrink-0" />
-                                                <XCircle v-else-if="att.is_rejected || att.status === 'rejected'" class="w-3 h-3 text-rose-600 shrink-0" />
-                                                <CheckCircle2 v-else-if="att.is_approver_verified" class="w-3 h-3 shrink-0" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
-                                                <!-- Jika tanpa approval (absen biasa / absent), di badge cukup keterangan teks saja tanpa ikon -->
-                                                <span>{{ getTableStatusLabel(att) }}</span>
-                                            </span>
-                                        </div>
-
-                                        <!-- Tampilan Mobile (sm:hidden): Selalu Ikon Bulat Interaktif -->
-                                        <div
-                                            class="sm:hidden w-8 h-8 rounded-full flex items-center justify-center transition-all transform active:scale-95 shadow-xs cursor-pointer border"
-                                            :class="[
-                                                att.status === 'present' || att.status === 'approved'
-                                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                                                    : '',
-                                                att.status === 'pending' || att.status === 'pending_approval'
-                                                    ? 'bg-amber-100 text-amber-700 border-amber-300 ring-2 ring-amber-200/60'
-                                                    : '',
-                                                att.status === 'late'
-                                                    ? 'bg-amber-100 text-amber-700 border-amber-300'
-                                                    : '',
-                                                att.status === 'rejected' || att.status === 'absent' || att.is_rejected
-                                                    ? 'bg-rose-100 text-rose-700 border-rose-300'
-                                                    : ''
-                                            ]"
-                                        >
-                                            <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-4 h-4 text-amber-600 animate-pulse" />
-                                            <XCircle v-else-if="att.is_rejected || att.status === 'rejected' || att.status === 'absent'" class="w-4 h-4 text-rose-600" />
-                                            <CheckCircle2 v-else-if="att.is_approver_verified" class="w-4 h-4" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
-                                            <Check v-else-if="att.status === 'present' || att.status === 'approved'" class="w-4 h-4 text-emerald-600" />
-                                            <Clock v-else-if="att.status === 'late'" class="w-4 h-4 text-amber-600" />
-                                        </div>
-
-                                        <!-- Di Layar Laptop/Desktop (hidden sm:inline-flex): Badge Pill Lengkap Standar Dashboard -->
+                                    <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                                        <span>{{ att.prayer_label }}</span>
                                         <span
-                                            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition cursor-default whitespace-nowrap"
-                                            :class="getStatusBadgeClasses(att)"
+                                            v-if="att.is_approver_verified"
+                                            class="sm:hidden inline-flex items-center text-emerald-600"
+                                            title="Disetujui Approver"
                                         >
-                                            <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-3.5 h-3.5 text-amber-600 animate-pulse shrink-0" />
-                                            <XCircle v-else-if="att.is_rejected || att.status === 'rejected'" class="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                            <CheckCircle2 v-else-if="att.is_approver_verified" class="w-3.5 h-3.5 shrink-0" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
-                                            <span>{{ getTableStatusLabel(att) }}</span>
+                                            <CheckCircle2 class="w-3.5 h-3.5" />
+                                        </span>
+                                        <span
+                                            v-else-if="att.is_rejected || att.status === 'rejected'"
+                                            class="sm:hidden inline-flex items-center text-rose-600"
+                                            title="Ditolak Approver"
+                                        >
+                                            <XCircle class="w-3.5 h-3.5" />
                                         </span>
                                     </div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">
+                                        <span>{{ att.attendance_date }}</span>
+                                    </div>
                                 </td>
 
-                                <!-- Kolom 3: Aksi / Detail -->
+                                <!-- Kolom 2: Waktu Absen (Mobile & Desktop) -->
+                                <td class="py-3.5 px-2 sm:px-4 text-center">
+                                    <span
+                                        v-if="att.status === 'absent'"
+                                        class="text-xs font-semibold text-rose-400"
+                                    >
+                                        -
+                                    </span>
+                                    <span
+                                        v-else
+                                        class="text-xs font-bold text-slate-700 tracking-tight"
+                                    >
+                                        {{ att.time }}
+                                    </span>
+                                </td>
+
+                                <!-- Kolom 3: Status (Khusus Layar Laptop/Desktop: hidden sm:table-cell) -->
+                                <td class="hidden sm:table-cell py-3.5 px-4 text-center">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition cursor-default whitespace-nowrap"
+                                        :class="getStatusBadgeClasses(att)"
+                                    >
+                                        <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-3.5 h-3.5 text-amber-600 animate-pulse shrink-0" />
+                                        <XCircle v-else-if="att.is_rejected || att.status === 'rejected'" class="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                        <CheckCircle2 v-else-if="att.is_approver_verified" class="w-3.5 h-3.5 shrink-0" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
+                                        <span>{{ getTableStatusLabel(att) }}</span>
+                                    </span>
+                                </td>
+
+                                <!-- Kolom 4: Aksi / Detail (Mobile & Desktop) -->
                                 <td class="py-3.5 px-4 sm:px-6 text-right">
                                     <span v-if="att.status === 'absent'" class="text-slate-300 font-bold px-2 py-1 select-none inline-block">
                                         -
