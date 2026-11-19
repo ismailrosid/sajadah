@@ -280,10 +280,10 @@ const hasApprovalStatus = (att) => {
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                <th class="py-3 px-4 sm:px-6">Sholat</th>
-                                <th class="py-3 px-2 sm:px-4 text-center">Waktu</th>
-                                <th class="hidden sm:table-cell py-3 px-4 text-center">Status</th>
-                                <th class="py-3 px-4 sm:px-6 text-right">Aksi</th>
+                                <th class="py-3 px-3 sm:px-6">Sholat</th>
+                                <th class="py-3 px-2 sm:px-4 text-center">Tanggal</th>
+                                <th class="py-3 px-2 sm:px-4 text-center">Jam</th>
+                                <th class="py-3 px-3 sm:px-6 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-xs">
@@ -293,31 +293,17 @@ const hasApprovalStatus = (att) => {
                                 class="transition border-b border-slate-100/70"
                                 :class="getRowClasses(att)"
                             >
-                                <!-- Kolom 1: Sholat (Mobile & Desktop) -->
-                                <td class="py-3.5 px-4 sm:px-6">
-                                    <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span>{{ att.prayer_label }}</span>
-                                        <span
-                                            v-if="att.is_approver_verified"
-                                            class="sm:hidden inline-flex items-center text-emerald-600"
-                                            title="Disetujui Approver"
-                                        >
-                                            <CheckCircle2 class="w-3.5 h-3.5" />
-                                        </span>
-                                        <span
-                                            v-else-if="att.is_rejected || att.status === 'rejected'"
-                                            class="sm:hidden inline-flex items-center text-rose-600"
-                                            title="Ditolak Approver"
-                                        >
-                                            <XCircle class="w-3.5 h-3.5" />
-                                        </span>
-                                    </div>
-                                    <div class="text-[11px] text-slate-500 mt-0.5">
-                                        <span>{{ att.attendance_date }}</span>
-                                    </div>
+                                <!-- Kolom 1: Sholat (Murni nama sholat, tanpa ikon) -->
+                                <td class="py-3.5 px-3 sm:px-6 font-bold text-slate-900 text-sm">
+                                    {{ att.prayer_label }}
                                 </td>
 
-                                <!-- Kolom 2: Waktu Absen (Mobile & Desktop) -->
+                                <!-- Kolom 2: Tanggal -->
+                                <td class="py-3.5 px-2 sm:px-4 text-center text-slate-600 text-[11px] sm:text-xs whitespace-nowrap">
+                                    {{ att.attendance_date }}
+                                </td>
+
+                                <!-- Kolom 3: Jam -->
                                 <td class="py-3.5 px-2 sm:px-4 text-center">
                                     <span
                                         v-if="att.status === 'absent'"
@@ -327,27 +313,14 @@ const hasApprovalStatus = (att) => {
                                     </span>
                                     <span
                                         v-else
-                                        class="text-xs font-bold text-slate-700 tracking-tight"
+                                        class="text-xs sm:text-sm font-bold text-slate-800 tracking-tight"
                                     >
                                         {{ att.time }}
                                     </span>
                                 </td>
 
-                                <!-- Kolom 3: Status (Khusus Layar Laptop/Desktop: hidden sm:table-cell) -->
-                                <td class="hidden sm:table-cell py-3.5 px-4 text-center">
-                                    <span
-                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition cursor-default whitespace-nowrap"
-                                        :class="getStatusBadgeClasses(att)"
-                                    >
-                                        <Clock v-if="att.status === 'pending' || att.status === 'pending_approval'" class="w-3.5 h-3.5 text-amber-600 animate-pulse shrink-0" />
-                                        <XCircle v-else-if="att.is_rejected || att.status === 'rejected'" class="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                        <CheckCircle2 v-else-if="att.is_approver_verified" class="w-3.5 h-3.5 shrink-0" :class="att.status === 'late' ? 'text-amber-600' : 'text-emerald-600'" />
-                                        <span>{{ getTableStatusLabel(att) }}</span>
-                                    </span>
-                                </td>
-
-                                <!-- Kolom 4: Aksi / Detail (Mobile & Desktop) -->
-                                <td class="py-3.5 px-4 sm:px-6 text-right">
+                                <!-- Kolom 4: Aksi (Cukup ikon mata saja) -->
+                                <td class="py-3.5 px-3 sm:px-6 text-center">
                                     <span v-if="att.status === 'absent'" class="text-slate-300 font-bold px-2 py-1 select-none inline-block">
                                         -
                                     </span>
@@ -355,11 +328,10 @@ const hasApprovalStatus = (att) => {
                                         v-else
                                         type="button"
                                         @click="openDetail(att)"
-                                        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition shadow-xs active:scale-95"
+                                        class="p-1.5 sm:p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-emerald-600 hover:border-emerald-300 transition shadow-xs active:scale-95 inline-flex items-center justify-center"
                                         title="Lihat Detail Bukti"
                                     >
-                                        <Eye class="w-3.5 h-3.5 text-slate-500" />
-                                        <span>Detail</span>
+                                        <Eye class="w-4 h-4 text-slate-600 hover:text-emerald-600 transition" />
                                     </button>
                                 </td>
                             </tr>
