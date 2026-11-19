@@ -48,34 +48,44 @@ class AttendanceMonitoringController extends Controller
             });
         }
 
-        $attendances = $query->with(['user', 'approver', 'approvals'])
+        $attendances = $query->with(['user', 'approver', 'approvals.approver'])
             ->paginate(20)
             ->withQueryString()
-            ->through(fn($a) => [
-                'id' => $a->id,
-                'uuid' => $a->uuid,
-                'user_name' => $a->user?->name ?? 'User',
-                'user_email' => $a->user?->email,
-                'user_avatar' => $a->user?->avatar_path,
-                'prayer_type' => $a->prayer_type->value,
-                'prayer_label' => $a->prayer_type->label(),
-                'attendance_date' => $a->attendance_date->format('d M Y'),
-                'time' => $a->server_timestamp->format('H:i:s'),
-                'status' => $a->status->value,
-                'status_label' => $a->status->label(),
-                'status_color' => $a->status->color(),
-                'is_approver_verified' => $a->isApprovedByApprover(),
-                'is_rejected' => $a->isRejectedByApprover(),
-                'has_photo' => !empty($a->photo_path),
-                'photo_url' => !empty($a->photo_path) ? route('member.attendance.photo', $a->id) : null,
-                'latitude' => $a->latitude,
-                'longitude' => $a->longitude,
-                'distance_meters' => $a->distance_meters,
-                'approval_source' => $a->approval_source,
-                'approved_by_name' => $a->approver?->name,
-                'request_notes' => $a->request_notes,
-                'rejection_reason' => $a->rejection_reason,
-            ]);
+            ->through(function ($a) {
+                $approvedApproval = $a->approvals->where('status', 'approved')->whereNotNull('note')->last();
+                $rejectedApproval = $a->approvals->where('status', 'rejected')->whereNotNull('note')->last();
+
+                $approvalNotes = $a->approval_notes ?: ($approvedApproval?->note ?? null);
+                $rejectionReason = $a->rejection_reason ?: ($rejectedApproval?->note ?? null);
+                $approvedByName = $a->approver?->name ?: ($approvedApproval?->approver?->name ?? null);
+
+                return [
+                    'id' => $a->id,
+                    'uuid' => $a->uuid,
+                    'user_name' => $a->user?->name ?? 'User',
+                    'user_email' => $a->user?->email,
+                    'user_avatar' => $a->user?->avatar_path,
+                    'prayer_type' => $a->prayer_type->value,
+                    'prayer_label' => $a->prayer_type->label(),
+                    'attendance_date' => $a->attendance_date->format('d M Y'),
+                    'time' => $a->server_timestamp->format('H:i:s'),
+                    'status' => $a->status->value,
+                    'status_label' => $a->status->label(),
+                    'status_color' => $a->status->color(),
+                    'is_approver_verified' => $a->isApprovedByApprover(),
+                    'is_rejected' => $a->isRejectedByApprover(),
+                    'has_photo' => !empty($a->photo_path),
+                    'photo_url' => !empty($a->photo_path) ? route('member.attendance.photo', $a->id) : null,
+                    'latitude' => $a->latitude,
+                    'longitude' => $a->longitude,
+                    'distance_meters' => $a->distance_meters,
+                    'approval_source' => $a->approval_source,
+                    'approved_by_name' => $approvedByName,
+                    'approval_notes' => $approvalNotes,
+                    'request_notes' => $a->request_notes,
+                    'rejection_reason' => $rejectionReason,
+                ];
+            });
 
         $stats = [
             'total' => Attendance::whereDate('attendance_date', $date)->count(),

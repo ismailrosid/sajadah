@@ -206,11 +206,14 @@ const applyFilters = () => {
                                     <span v-else class="text-slate-400">-</span>
                                 </td>
                                 <td class="py-3 px-4 text-slate-600 text-[11px] max-w-xs truncate">
-                                    <span v-if="a.request_notes" class="text-amber-800 italic" :title="a.request_notes">
-                                        "{{ a.request_notes }}"
+                                    <span v-if="a.approval_notes" class="text-emerald-700 italic" :title="`Persetujuan: ${a.approval_notes}`">
+                                        "{{ a.approval_notes }}"
                                     </span>
-                                    <span v-else-if="a.rejection_reason" class="text-rose-700 italic" :title="a.rejection_reason">
-                                        Alasan tolak: "{{ a.rejection_reason }}"
+                                    <span v-else-if="a.rejection_reason" class="text-rose-700 italic" :title="`Alasan tolak: ${a.rejection_reason}`">
+                                        Tolak: "{{ a.rejection_reason }}"
+                                    </span>
+                                    <span v-else-if="a.request_notes" class="text-amber-800 italic" :title="`Susulan: ${a.request_notes}`">
+                                        Susulan: "{{ a.request_notes }}"
                                     </span>
                                     <span v-else class="text-slate-400">-</span>
                                 </td>

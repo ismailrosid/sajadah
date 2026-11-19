@@ -79,35 +79,54 @@ class HistoryController extends Controller
             }
         }
 
-        $attendances = $query->with('approvals')
+        $attendances = $query->with(['approvals.approver', 'approver'])
             ->orderByDesc('attendance_date')
             ->orderByDesc('server_timestamp')
             ->paginate(15)
             ->withQueryString()
-            ->through(fn($a) => [
-                'id' => $a->id,
-                'uuid' => $a->uuid,
-                'prayer_type' => $a->prayer_type->value,
-                'prayer_label' => $a->prayer_type->label(),
-                'attendance_date' => $a->attendance_date->format('d M Y'),
-                'attendance_date_raw' => $a->attendance_date->toDateString(),
-                'time' => $a->server_timestamp->format('H:i'),
-                'status' => $a->status->value,
-                'status_label' => $a->status->label(),
-                'status_color' => $a->status->color(),
-                'is_approver_verified' => $a->isApprovedByApprover(),
-                'is_rejected' => $a->isRejectedByApprover(),
-                'distance_meters' => $a->distance_meters,
-                'gps_accuracy' => $a->gps_accuracy,
-                'latitude' => $a->latitude,
-                'longitude' => $a->longitude,
-                'location_name' => $a->metadata['location_name'] ?? null,
-                'address' => $a->metadata['address'] ?? null,
-                'has_photo' => !empty($a->photo_path),
-                'photo_url' => !empty($a->photo_path) ? route('member.attendance.photo', $a->id) : null,
-                'rejection_reason' => $a->rejection_reason,
-                'request_notes' => $a->request_notes,
-            ]);
+            ->through(function ($a) {
+                $approvedApproval = $a->approvals->where('status', 'approved')->whereNotNull('note')->last();
+                $rejectedApproval = $a->approvals->where('status', 'rejected')->whereNotNull('note')->last();
+
+                $approvalNotes = $a->approval_notes ?: ($approvedApproval?->note ?? null);
+                $rejectionReason = $a->rejection_reason ?: ($rejectedApproval?->note ?? null);
+
+                $approverName = $a->approver?->name
+                    ?: ($approvedApproval?->approver?->name ?? $rejectedApproval?->approver?->name ?? null);
+
+                $approvedAt = $a->approved_at
+                    ? $a->approved_at->format('d M Y H:i')
+                    : ($approvedApproval?->approved_at ? $approvedApproval->approved_at->format('d M Y H:i') : null);
+
+                return [
+                    'id' => $a->id,
+                    'uuid' => $a->uuid,
+                    'prayer_type' => $a->prayer_type->value,
+                    'prayer_label' => $a->prayer_type->label(),
+                    'attendance_date' => $a->attendance_date->format('d M Y'),
+                    'attendance_date_raw' => $a->attendance_date->toDateString(),
+                    'time' => $a->server_timestamp->format('H:i'),
+                    'status' => $a->status->value,
+                    'status_label' => $a->status->label(),
+                    'status_color' => $a->status->color(),
+                    'is_approver_verified' => $a->isApprovedByApprover(),
+                    'is_rejected' => $a->isRejectedByApprover(),
+                    'distance_meters' => $a->distance_meters,
+                    'gps_accuracy' => $a->gps_accuracy,
+                    'latitude' => $a->latitude,
+                    'longitude' => $a->longitude,
+                    'location_name' => $a->metadata['location_name'] ?? null,
+                    'address' => $a->metadata['address'] ?? null,
+                    'has_photo' => !empty($a->photo_path),
+                    'photo_url' => !empty($a->photo_path) ? route('member.attendance.photo', $a->id) : null,
+                    'approval_notes' => $approvalNotes,
+                    'rejection_reason' => $rejectionReason,
+                    'request_notes' => $a->request_notes,
+                    'approval_source' => $a->approval_source,
+                    'approver_name' => $approverName,
+                    'approved_at' => $approvedAt,
+                ];
+            });
 
         // Monthly stats breakdown
         $monthlyPresent = Attendance::where('user_id', $targetUser->id)

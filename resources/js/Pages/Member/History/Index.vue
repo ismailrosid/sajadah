@@ -418,18 +418,78 @@ const getRowClasses = (att) => {
                                         </div>
                                     </td>
                                 </tr>
+                                <tr v-if="selectedAttendance.is_approver_verified && selectedAttendance.approver_name">
+                                    <td class="py-2.5 px-4 font-semibold text-slate-500">
+                                        Disetujui Oleh
+                                    </td>
+                                    <td class="py-2.5 px-4 font-bold text-slate-900">
+                                        {{ selectedAttendance.approver_name }}
+                                        <span v-if="selectedAttendance.approved_at" class="text-[11px] font-normal text-slate-500 ml-1">
+                                            ({{ selectedAttendance.approved_at }})
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-else-if="selectedAttendance.approval_source === 'system'">
+                                    <td class="py-2.5 px-4 font-semibold text-slate-500">
+                                        Persetujuan
+                                    </td>
+                                    <td class="py-2.5 px-4 font-semibold text-slate-700 italic">
+                                        Sistem Otomatis
+                                    </td>
+                                </tr>
+                                <tr v-else-if="selectedAttendance.is_rejected && selectedAttendance.approver_name">
+                                    <td class="py-2.5 px-4 font-semibold text-slate-500">
+                                        Ditolak Oleh
+                                    </td>
+                                    <td class="py-2.5 px-4 font-bold text-slate-900">
+                                        {{ selectedAttendance.approver_name }}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div v-if="selectedAttendance.request_notes" class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs">
-                        <span class="font-bold text-amber-900">Catatan Susulan:</span>
-                        <p class="text-amber-800 italic mt-0.5 capitalize">"{{ selectedAttendance.request_notes }}"</p>
+                    <!-- Catatan Approval / Persetujuan -->
+                    <div v-if="selectedAttendance.approval_notes" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                        <div class="flex items-center justify-between text-emerald-900 font-bold mb-1">
+                            <span class="flex items-center gap-1.5">
+                                <CheckCircle2 class="w-4 h-4 text-emerald-600 shrink-0" />
+                                <span>Catatan Persetujuan:</span>
+                            </span>
+                            <span v-if="selectedAttendance.approver_name" class="text-[11px] font-medium text-emerald-700">
+                                oleh {{ selectedAttendance.approver_name }}
+                            </span>
+                        </div>
+                        <p class="text-emerald-800 leading-relaxed whitespace-pre-line pl-5">
+                            "{{ selectedAttendance.approval_notes }}"
+                        </p>
                     </div>
 
-                    <div v-if="selectedAttendance.rejection_reason" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs">
-                        <span class="font-bold text-rose-900">Alasan Ditolak:</span>
-                        <p class="text-rose-800 mt-0.5 capitalize">{{ selectedAttendance.rejection_reason }}</p>
+                    <!-- Catatan Pengajuan Susulan -->
+                    <div v-if="selectedAttendance.request_notes" class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+                        <div class="flex items-center gap-1.5 text-amber-900 font-bold mb-1">
+                            <Clock class="w-4 h-4 text-amber-600 shrink-0" />
+                            <span>Catatan Pengajuan Susulan:</span>
+                        </div>
+                        <p class="text-amber-800 italic leading-relaxed whitespace-pre-line pl-5">
+                            "{{ selectedAttendance.request_notes }}"
+                        </p>
+                    </div>
+
+                    <!-- Alasan Penolakan -->
+                    <div v-if="selectedAttendance.rejection_reason" class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs">
+                        <div class="flex items-center justify-between text-rose-900 font-bold mb-1">
+                            <span class="flex items-center gap-1.5">
+                                <XCircle class="w-4 h-4 text-rose-600 shrink-0" />
+                                <span>Alasan Ditolak:</span>
+                            </span>
+                            <span v-if="selectedAttendance.approver_name" class="text-[11px] font-medium text-rose-700">
+                                oleh {{ selectedAttendance.approver_name }}
+                            </span>
+                        </div>
+                        <p class="text-rose-800 leading-relaxed whitespace-pre-line pl-5">
+                            "{{ selectedAttendance.rejection_reason }}"
+                        </p>
                     </div>
                 </div>
             </Modal>
