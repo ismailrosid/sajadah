@@ -123,6 +123,23 @@ const getStatusBadgeClasses = (att) => {
     }
     return 'bg-slate-100 text-slate-700 border-slate-200';
 };
+
+const getRowClasses = (att) => {
+    if (!att) return 'hover:bg-slate-50/70';
+    if (att.status === 'present' || att.status === 'approved') {
+        return 'bg-emerald-50/40 hover:bg-emerald-50/70';
+    }
+    if (att.status === 'pending' || att.status === 'pending_approval') {
+        return 'bg-amber-50/30 hover:bg-amber-50/60';
+    }
+    if (att.status === 'late') {
+        return 'bg-amber-50/40 hover:bg-amber-50/70';
+    }
+    if (att.status === 'rejected' || att.status === 'absent' || att.is_rejected) {
+        return 'bg-rose-50/40 hover:bg-rose-50/70';
+    }
+    return 'hover:bg-slate-50/70';
+};
 </script>
 
 <template>
@@ -268,7 +285,8 @@ const getStatusBadgeClasses = (att) => {
                             <tr
                                 v-for="att in attendances.data"
                                 :key="att.id"
-                                class="hover:bg-slate-50/70 transition border-b border-slate-100"
+                                class="transition border-b border-slate-100"
+                                :class="getRowClasses(att)"
                             >
                                 <!-- Kolom 1: Sholat (Murni nama sholat, tanpa ikon) -->
                                 <td class="py-3.5 px-3 sm:px-6 font-bold text-slate-900 text-sm">
