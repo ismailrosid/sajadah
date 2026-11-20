@@ -62,8 +62,8 @@ class AttendanceController extends Controller
             $win = $windowEvaluation['prayers'][$type->value] ?? null;
 
             $isActuallyAttended = $att && $att->status !== AttendanceStatus::Absent;
-            $isMissed = ($win['is_missed'] ?? false) || ($att && $att->status === AttendanceStatus::Absent);
-            $canLate = $isActuallyAttended ? false : ($isMissed ? false : ($win['can_late'] ?? false));
+            $canLate = !$isActuallyAttended && ($win['is_closed'] ?? false);
+            $isMissed = false;
 
             $prayersData[$type->value] = [
                 'type' => $type->value,
@@ -75,7 +75,7 @@ class AttendanceController extends Controller
                 'is_open' => $win['is_open'] ?? false,
                 'is_closed' => $win['is_closed'] ?? false,
                 'can_late' => $canLate,
-                'is_missed' => $isActuallyAttended ? false : $isMissed,
+                'is_missed' => false,
                 'window_status' => $win['status'] ?? 'upcoming',
                 'remaining_window_seconds' => $win['remaining_window_seconds'] ?? 0,
                 'remaining_until_prayer_seconds' => $win['remaining_until_prayer_seconds'] ?? 0,

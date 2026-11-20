@@ -65,13 +65,17 @@ class AttendanceValidationService
             $isTestMode = filter_var(env('ATTENDANCE_TEST_MODE', false), FILTER_VALIDATE_BOOLEAN);
 
             // 1. Check duplicate attendance for this prayer and user today (Bypassed in test mode)
-            if (!$isTestMode) {
-                $existing = Attendance::where('user_id', $user->id)
-                    ->where('prayer_type', $prayerType->value)
-                    ->whereDate('attendance_date', $todayDate)
-                    ->first();
+            $existing = Attendance::where('user_id', $user->id)
+                ->where('prayer_type', $prayerType->value)
+                ->whereDate('attendance_date', $todayDate)
+                ->first();
 
-                if ($existing) {
+            if (!$isTestMode && $existing) {
+                // Jika statusnya adalah 'absent' (otomatis sistem karena lewat waktu) dan sekarang mengajukan susulan,
+                // izinkan untuk menimpa/mengupdate record absent tersebut.
+                if ($existing->status === AttendanceStatus::Absent && $isLateRequest) {
+                    // Diizinkan: record akan di-update ke pengajuan susulan
+                } else {
                     throw ValidationException::withMessages([
                         'prayer_type' => "Absensi Sholat {$prayerType->label()} hari ini sudah tercatat.",
                     ]);
@@ -135,32 +139,6 @@ class AttendanceValidationService
                 }
 
                 $status = $hasApprover ? AttendanceStatus::PendingApproval : AttendanceStatus::Late;
-            }
-
-            // Check if next prayer has arrived (Susulan closed / Missed)
-            $nextPrayerMap = [
-                'subuh' => 'dzuhur',
-                'dzuhur' => 'ashar',
-                'ashar' => 'maghrib',
-                'maghrib' => 'isya',
-                'isya' => 'subuh',
-            ];
-            $nextPrayerKey = $nextPrayerMap[$prayerType->value] ?? null;
-            if ($nextPrayerKey && $schedule && !$isTestMode) {
-                $nextTimeStr = $schedule->getTimeFor($nextPrayerKey);
-                if ($nextTimeStr) {
-                    $nextPrayerStart = Carbon::parse("{$todayDate} {$nextTimeStr}", $timezone);
-                    if ($prayerType->value === 'isya') {
-                        $nextPrayerStart->addDay();
-                    }
-
-                    if ($serverTimestamp->gte($nextPrayerStart)) {
-                        throw ValidationException::withMessages([
-                            'prayer_type' => "Batas waktu absensi Sholat {$prayerType->label()} telah berakhir.",
-                            'is_prayer_missed' => true,
-                        ]);
-                    }
-                }
             }
 
             // 4. Catat Titik Lokasi GPS Kehadiran Aktual
@@ -237,19 +215,15 @@ class AttendanceValidationService
                 $attendanceData['mosque_id'] = $data['mosque_id'] ?? null;
             }
 
-            if ($isTestMode) {
-                $existing = Attendance::where('user_id', $user->id)
-                    ->where('prayer_type', $prayerType->value)
-                    ->whereDate('attendance_date', $todayDate)
-                    ->first();
+            $existing = Attendance::where('user_id', $user->id)
+                ->where('prayer_type', $prayerType->value)
+                ->whereDate('attendance_date', $todayDate)
+                ->first();
 
-                if ($existing) {
-                    $existing->approvals()->delete();
-                    $existing->update($attendanceData);
-                    $attendance = $existing;
-                } else {
-                    $attendance = Attendance::create($attendanceData);
-                }
+            if ($existing) {
+                $existing->approvals()->delete();
+                $existing->update($attendanceData);
+                $attendance = $existing;
             } else {
                 $attendance = Attendance::create($attendanceData);
             }

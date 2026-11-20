@@ -363,8 +363,9 @@ class PrayerScheduleCalculationService
             $isClosed = $now->gt($windowEnd);
             $isNextStarted = $now->gte($nextPrayerStart);
 
-            $canLate = $isClosed && !$isNextStarted;
-            $isMissed = $isNextStarted;
+            // Sholat hari ini yang sudah lewat jendela normal selalu bisa diajukan susulan
+            $canLate = $isClosed;
+            $isMissed = false;
 
             $remainingWindowSeconds = $isOpen ? max(0, (int) round($now->diffInSeconds($windowEnd, false))) : 0;
             $remainingUntilPrayerSeconds = !$isStarted ? max(0, (int) round($now->diffInSeconds($windowStart, false))) : 0;
@@ -373,10 +374,8 @@ class PrayerScheduleCalculationService
                 $status = 'open'; // Sedang Terbuka
             } elseif (!$isStarted) {
                 $status = 'upcoming'; // Belum Masuk
-            } elseif ($canLate) {
-                $status = 'late_available'; // Periode Berakhir, tapi sholat berikutnya belum masuk (Bisa Susulan)
             } else {
-                $status = 'missed'; // Sholat berikutnya sudah masuk -> Ditutup Total / Tidak Sholat
+                $status = 'late_available'; // Periode Normal Berakhir -> Bisa Susulan
             }
 
             $prayerData = [

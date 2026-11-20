@@ -17,7 +17,7 @@ const props = defineProps({
 
 const selectedPrayerType = ref('subuh');
 
-// Preselect prayer from URL query if present, otherwise prefer active open window or first un-attended prayer
+// Preselect prayer from URL query if present, otherwise prefer active open window or current prayer interval
 onMounted(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const prayerParam = urlParams.get('prayer');
@@ -26,10 +26,24 @@ onMounted(() => {
     } else if (props.activeOpenWindow && props.prayers && props.prayers[props.activeOpenWindow.type] && !props.prayers[props.activeOpenWindow.type].attended) {
         selectedPrayerType.value = props.activeOpenWindow.type;
     } else if (props.prayers) {
-        for (const [key, data] of Object.entries(props.prayers)) {
-            if (!data.attended) {
-                selectedPrayerType.value = key;
+        // Cari sholat terakhir yang sudah masuk waktunya dan belum dihadiri (misal jam 13:28 pilih Dzuhur, bukan lompat ke Subuh)
+        const prayerKeys = ['isya', 'maghrib', 'ashar', 'dzuhur', 'subuh'];
+        let matched = null;
+        for (const key of prayerKeys) {
+            const data = props.prayers[key];
+            if (data && data.is_started && !data.attended) {
+                matched = key;
                 break;
+            }
+        }
+        if (matched) {
+            selectedPrayerType.value = matched;
+        } else {
+            for (const [key, data] of Object.entries(props.prayers)) {
+                if (!data.attended) {
+                    selectedPrayerType.value = key;
+                    break;
+                }
             }
         }
     }
@@ -50,19 +64,19 @@ const isWindowOpen = computed(() => {
 });
 
 const canLate = computed(() => {
-    return Boolean(selectedPrayer.value?.can_late || (selectedPrayer.value?.is_closed && !selectedPrayer.value?.is_missed));
+    return Boolean(selectedPrayer.value?.can_late || selectedPrayer.value?.is_closed);
 });
 
 const isMissed = computed(() => {
-    return Boolean(selectedPrayer.value?.is_missed || selectedPrayer.value?.window_status === 'missed');
+    return false; // Sholat hari ini yang terlewat selalu bisa diajukan susulan
 });
 
 const isWindowClosed = computed(() => {
-    return canLate.value;
+    return canLate.value && !isWindowOpen.value && !isAlreadyAttended.value && !isUpcoming.value;
 });
 
 const isUpcoming = computed(() => {
-    return selectedPrayer.value?.window_status === 'upcoming' || (!selectedPrayer.value?.is_started && !selectedPrayer.value?.is_open && !selectedPrayer.value?.is_closed && !selectedPrayer.value?.is_missed);
+    return selectedPrayer.value?.window_status === 'upcoming' || (!selectedPrayer.value?.is_started && !selectedPrayer.value?.is_open && !selectedPrayer.value?.is_closed);
 });
 
 // Geolocation state (recorded purely for attendance location tracking)
@@ -430,22 +444,7 @@ const submitAttendance = () => {
                     </div>
                 </div>
 
-                <!-- Missed Prayer Notice (When next prayer already arrived) -->
-                <div v-else-if="!isAlreadyAttended && isMissed && !isTestMode" class="p-4 sm:p-5 rounded-2xl bg-rose-50/80 border border-rose-200 text-slate-800 space-y-2 shadow-xs">
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0">
-                            <XCircle class="w-4 h-4" />
-                        </div>
-                        <div class="text-xs space-y-1">
-                            <div class="font-bold text-rose-950 text-sm">Absensi Telah Ditutup</div>
-                           <div class="text-slate-600 leading-relaxed">
-                                Waktu sholat berikutnya telah tiba. Absensi untuk Sholat <strong class="text-slate-900">{{ selectedPrayer.label }}</strong> telah ditutup otomatis oleh sistem.
-                           </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Late Request Box (When window closed and not attended and not missed) -->
+                <!-- Late Request Box (When window closed and not attended) -->
                 <div v-else-if="!isAlreadyAttended && isWindowClosed" class="p-4 sm:p-5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-slate-800 space-y-3.5 shadow-xs">
                     <div class="flex items-start gap-3">
                         <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
@@ -583,10 +582,10 @@ const submitAttendance = () => {
                 <button
                     type="button"
                     @click="submitAttendance"
-                    :disabled="form.processing || (!isTestMode && (!capturedPhotoFile || geoLoading || !!geoError || isAlreadyAttended || isUpcoming || isMissed || (isWindowClosed && !form.request_notes?.trim())))"
+                    :disabled="form.processing || (!isTestMode && (!capturedPhotoFile || geoLoading || !!geoError || isAlreadyAttended || isUpcoming || (isWindowClosed && !form.request_notes?.trim())))"
                     class="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2"
                     :class="[
-                        form.processing || (!isTestMode && (!capturedPhotoFile || geoLoading || !!geoError || isAlreadyAttended || isUpcoming || isMissed || (isWindowClosed && !form.request_notes?.trim())))
+                        form.processing || (!isTestMode && (!capturedPhotoFile || geoLoading || !!geoError || isAlreadyAttended || isUpcoming || (isWindowClosed && !form.request_notes?.trim())))
                             ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
                             : isTestMode
                             ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25 active:scale-[0.98]'
@@ -598,9 +597,8 @@ const submitAttendance = () => {
                     <Loader2 v-if="form.processing" class="w-5 h-5 animate-spin" />
                     <template v-else>
                         <Sparkles v-if="isTestMode" class="w-5 h-5 text-indigo-200" />
-                        <CheckCircle v-else-if="!isWindowClosed && !isAlreadyAttended && !isUpcoming && !isMissed" class="w-5 h-5" />
-                        <Send v-else-if="isWindowClosed && !isAlreadyAttended && !isMissed" class="w-5 h-5" />
-                        <XCircle v-else-if="isMissed && !isAlreadyAttended" class="w-5 h-5" />
+                        <CheckCircle v-else-if="!isWindowClosed && !isAlreadyAttended && !isUpcoming" class="w-5 h-5" />
+                        <Send v-else-if="isWindowClosed && !isAlreadyAttended" class="w-5 h-5" />
                         <Clock v-else class="w-5 h-5" />
                     </template>
                     <span>
@@ -610,7 +608,6 @@ const submitAttendance = () => {
                             <span v-else>Kirim Absensi Sholat {{ selectedPrayer?.label }} (Bebas Kapan Saja)</span>
                         </template>
                         <template v-else-if="isAlreadyAttended">Sudah Melakukan Absensi</template>
-                        <template v-else-if="isMissed">Waktu Sholat Telah Ditutup (Terlewat)</template>
                         <template v-else-if="isUpcoming">Waktu Sholat Belum Masuk</template>
                         <template v-else-if="isWindowClosed">Ajukan Absensi Susulan</template>
                         <template v-else>Kirim & Simpan Absensi</template>
