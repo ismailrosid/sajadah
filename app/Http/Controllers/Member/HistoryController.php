@@ -85,18 +85,28 @@ class HistoryController extends Controller
             ->paginate(15)
             ->withQueryString()
             ->through(function ($a) {
+                $isApprovedByApprover = $a->isApprovedByApprover();
+                $isRejected = $a->isRejectedByApprover();
+
                 $approvedApproval = $a->approvals->where('status', 'approved')->whereNotNull('note')->last();
                 $rejectedApproval = $a->approvals->where('status', 'rejected')->whereNotNull('note')->last();
 
-                $approvalNotes = $a->approval_notes ?: ($approvedApproval?->note ?? null);
-                $rejectionReason = $a->rejection_reason ?: ($rejectedApproval?->note ?? null);
+                // Hanya tampilkan catatan persetujuan jika benar-benar diverifikasi/disetujui oleh approver
+                $approvalNotes = ($isApprovedByApprover && $a->approval_source !== 'system')
+                    ? ($a->approval_notes ?: ($approvedApproval?->note ?? null))
+                    : null;
 
-                $approverName = $a->approver?->name
-                    ?: ($approvedApproval?->approver?->name ?? $rejectedApproval?->approver?->name ?? null);
+                $rejectionReason = $isRejected
+                    ? ($a->rejection_reason ?: ($rejectedApproval?->note ?? null))
+                    : null;
 
-                $approvedAt = $a->approved_at
-                    ? $a->approved_at->format('d M Y H:i')
-                    : ($approvedApproval?->approved_at ? $approvedApproval->approved_at->format('d M Y H:i') : null);
+                $approverName = $isApprovedByApprover || $isRejected
+                    ? ($a->approver?->name ?: ($approvedApproval?->approver?->name ?? $rejectedApproval?->approver?->name ?? null))
+                    : null;
+
+                $approvedAt = $isApprovedByApprover
+                    ? ($a->approved_at ? $a->approved_at->format('d M Y H:i') : ($approvedApproval?->approved_at ? $approvedApproval->approved_at->format('d M Y H:i') : null))
+                    : null;
 
                 return [
                     'id' => $a->id,

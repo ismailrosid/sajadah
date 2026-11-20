@@ -418,39 +418,12 @@ const getRowClasses = (att) => {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="selectedAttendance.is_approver_verified && selectedAttendance.approver_name">
-                                    <td class="py-2.5 px-4 font-semibold text-slate-500">
-                                        Disetujui Oleh
-                                    </td>
-                                    <td class="py-2.5 px-4 font-bold text-slate-900 capitalize">
-                                        {{ selectedAttendance.approver_name }}
-                                        <span v-if="selectedAttendance.approved_at" class="text-[11px] font-normal text-slate-500 ml-1 normal-case">
-                                            ({{ selectedAttendance.approved_at }})
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr v-else-if="selectedAttendance.approval_source === 'system'">
-                                    <td class="py-2.5 px-4 font-semibold text-slate-500">
-                                        Persetujuan
-                                    </td>
-                                    <td class="py-2.5 px-4 font-semibold text-slate-700 italic">
-                                        Sistem Otomatis
-                                    </td>
-                                </tr>
-                                <tr v-else-if="selectedAttendance.is_rejected && selectedAttendance.approver_name">
-                                    <td class="py-2.5 px-4 font-semibold text-slate-500">
-                                        Ditolak Oleh
-                                    </td>
-                                    <td class="py-2.5 px-4 font-bold text-slate-900 capitalize">
-                                        {{ selectedAttendance.approver_name }}
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- Catatan Approval / Persetujuan -->
-                    <div v-if="selectedAttendance.approval_notes" class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs space-y-2">
+                    <!-- Catatan Approval / Persetujuan (Hanya jika disetujui lewat Approver) -->
+                    <div v-if="selectedAttendance.is_approver_verified && selectedAttendance.approval_notes" class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs space-y-2">
                         <div class="flex items-center gap-1.5 text-emerald-900 font-bold">
                             <CheckCircle2 class="w-4 h-4 text-emerald-600 shrink-0" />
                             <span>Catatan Persetujuan</span>
